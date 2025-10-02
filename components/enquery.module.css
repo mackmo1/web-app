@@ -1,0 +1,129 @@
+.loginContainer{
+    background: url(../public/bg-icon-1.png) repeat;
+    box-sizing: border-box;
+}
+.loginContainer_in{
+    background: #ffffff;
+    border: 1px solid #dfdfdf;
+    max-width: 720px;
+    padding: 30px;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #606060;
+}
+.login_heading, .contactHeading{
+    font: 600 22px/ 1.25 'Segoe UI';
+    display: flex;
+    align-items: center;
+    gap: 8px 16px;
+    color: #303030;
+    margin-bottom: 20px;
+}
+.contactHeading {
+    font-size: 32px;
+}
+.wrapper{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    gap: 20px 30px;
+}
+.inputGroup{
+    width: 100%;
+}
+.inputGroup:nth-child(-n + 10),
+.inputGroup.anotherHalf{
+    width: calc(50% - 15px);
+}
+.radioGroup{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 4px;
+}
+.radioGroup input{
+    width: 14px;
+    height: 14px;
+    margin: -2px 4px 0px 0px;
+    display: inline-block;
+    vertical-align: middle;
+}
+.inputGroup label {
+    display: block;
+    font-size: 14px;
+    color: #606060;
+    position: absolute;
+    left: 2px;
+    top: 0;
+    right: 0;
+    line-height: 40px;
+    transition: all .3s;
+    cursor: text
+}
+.inputField {
+    display: block;
+    width: 100%;
+    height: 40px;
+    box-sizing: border-box;
+    padding: 4px 4px;
+    border: none;
+    outline: none;
+    border-bottom: 1px solid #d8d8d8;
+}
+textarea.inputField {
+    height: 90px;
+    padding-top: 10px;
+}
+.inputGroup:has(.inputField:not(:placeholder-shown), .inputField:focus-visible) label {
+    top: -20px;
+    font-size: 12px;
+    color: #909090
+}
+.inputField::placeholder {
+    font-size: 0;
+}
+.checkBoxGroup{
+    font-size: 0.9em;
+    display: flex;
+    align-items: start;
+    gap: 8px;
+}
+.poliyText{
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin: 3px 0px 0px 0px;
+}
+.submitButton{
+    width: 100%;
+    text-align: center;
+    display: block;
+    padding: 8px 16px;
+    background: #202020;
+    color: #ffffff;
+    border: none;
+    outline: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 300ms ease-in-out 0ms;
+}
+.submitButton:hover{
+    background: #000000;
+}
+.buttonGroup a{
+    color: #000000;
+    font-weight: 500;
+    text-decoration: underline;
+}
+input.inputField::-webkit-outer-spin-button,
+input.inputField::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input.inputField {
+    -moz-appearance:textfield;
+}
+.contactFormContent p{
+    font-size: 18px;
+    margin-bottom: 30px;
+}
