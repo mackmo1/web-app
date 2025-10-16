@@ -54,3 +54,43 @@ model user {
   password   String?  @db.VarChar
   role       String?  @db.VarChar
 }
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Lead {
+  id            BigInt   @id @default(autoincrement())
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  who           String   @db.VarChar
+  intent        String   @db.VarChar
+  property_type String?  @db.VarChar
+  agent         String?  @db.VarChar
+  status        String?  @db.VarChar
+  name          String?  @db.VarChar
+  phone         String   @db.VarChar
+  email_id      String   @db.VarChar
+  location      String   @db.VarChar
+  message       String?
+  budget        String?  @db.VarChar
+  pin_no        String?  @db.VarChar
+  address       String?  @db.VarChar
+  bedrooms      String?  @db.VarChar
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model projects {
+  id              BigInt   @id @default(autoincrement())
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  name            String?  @db.VarChar
+  address         String?  @db.VarChar
+  city            String?  @db.VarChar
+  google_location String?  @db.VarChar
+  overview_area   String?  @db.VarChar
+  near_by         String?
+  overview_floors String?  @db.VarChar
+  overview_rem1   String?  @db.VarChar
+  overview_rem2   String?  @db.VarChar
+  rooms           String?  @db.VarChar
+  area_sqft       String?  @db.VarChar
+  price_range     String?  @db.VarChar
+  usp             String?
+  external_id     String?  @db.VarChar
+}

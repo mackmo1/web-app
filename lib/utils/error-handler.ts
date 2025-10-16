@@ -94,7 +94,7 @@ export function handleApiError(error: unknown): NextResponse {
   // Handle Prisma errors
   if (error && typeof error === 'object' && 'code' in error) {
     const prismaError = error as { code?: string; message?: string };
-    
+
     switch (prismaError.code) {
       case 'P2002':
         return createDuplicateEntryResponse('A record with this information already exists');
@@ -153,7 +153,7 @@ export function validateUserId(id: string): bigint {
       400
     );
   }
-  
+
   const numericId = Number(id);
   if (numericId <= 0) {
     throw new ApiError(
@@ -162,9 +162,52 @@ export function validateUserId(id: string): bigint {
       400
     );
   }
-  
+
   return BigInt(id);
 }
+
+// Lead ID validation helper
+export function validateLeadId(id: string): bigint {
+  if (!id || isNaN(Number(id))) {
+    throw new ApiError(
+      ErrorType.BAD_REQUEST,
+      'Invalid lead ID format',
+      400
+    );
+  }
+
+  const numericId = Number(id);
+  if (numericId <= 0) {
+    throw new ApiError(
+      ErrorType.BAD_REQUEST,
+      'Lead ID must be a positive number',
+      400
+    );
+  }
+
+  return BigInt(id);
+}
+
+// Project ID validation helper
+export function validateProjectId(id: string): bigint {
+  if (!id || isNaN(Number(id))) {
+    throw new ApiError(
+      ErrorType.BAD_REQUEST,
+      'Invalid project ID format',
+      400
+    );
+  }
+  const numericId = Number(id);
+  if (numericId <= 0) {
+    throw new ApiError(
+      ErrorType.BAD_REQUEST,
+      'Project ID must be a positive number',
+      400
+    );
+  }
+  return BigInt(id);
+}
+
 
 // Pagination validation helper
 export function validatePagination(page: number, limit: number) {
@@ -175,7 +218,7 @@ export function validatePagination(page: number, limit: number) {
       400
     );
   }
-  
+
   if (limit < 1 || limit > 100) {
     throw new ApiError(
       ErrorType.BAD_REQUEST,

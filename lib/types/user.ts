@@ -103,3 +103,11 @@ export interface UserValidationRules {
     minLength?: number;
   };
 }
+
+// Generic API response type that can be reused
+export interface GenericApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}

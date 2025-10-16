@@ -12,7 +12,7 @@ type ContactFormData = {
   city: string;
   zipCode: string;
   wantTo: 'buy' | 'sell' | 'rent' | '';
-  intent: 'buy' | 'rent' | '';
+  bedrooms: '1BHK' | '2BHK' | '3BHK' | '4BHK' | '';
   propertyType: 'house' | 'apartment' | 'commercial' | 'plot' | '';
   budget: string;
   contactDetails: string;
@@ -33,7 +33,7 @@ const ContactForm = () => {
       city: '',
       zipCode: '',
       wantTo: '',
-      intent: '',
+      bedrooms: '',
       propertyType: '',
       budget: '',
       contactDetails: '',
@@ -48,8 +48,69 @@ const ContactForm = () => {
   } = methods;
 
   // Correctly typed submit handler
-  const onSubmit: SubmitHandler<ContactFormData> = (data) => {
-    console.log("Form submitted:", data);
+  const onSubmit: SubmitHandler<ContactFormData> = async (data) => {
+    // Transform UI values to API payload
+    const mapPropertyType = (pt: ContactFormData['propertyType']) => {
+      if (!pt) return undefined;
+      if (pt === 'house') return 'villa';
+      return pt;
+    };
+
+    const mapBudget = (b: string) => {
+      switch (b) {
+        case '<100k':
+          return '0-100000';
+        case '100k-200k':
+          return '100000-200000';
+        case '200k-300k':
+          return '200000-300000';
+        case '>300k':
+          return '300000-999999999';
+        default:
+          return b || undefined;
+      }
+    };
+
+    const payload: any = {
+      // Hardcoded per requirement
+      who: 'website',
+      agent: 'none',
+      status: 'new',
+      // Mapped fields
+      name: data.userName,
+      email_id: data.userEmail,
+      phone: data.mobileNumber,
+      location: data.city,
+      pin_no: data.zipCode || undefined,
+      message: data.message,
+      property_type: mapPropertyType(data.propertyType),
+      budget: mapBudget(data.budget),
+      bedrooms: data.bedrooms || undefined,
+      address: data.contactDetails || undefined,
+      intent: data.wantTo,
+    };
+
+    try {
+      const res = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        console.error('Failed to submit lead:', result.error || res.statusText);
+        alert(result?.error || 'Failed to submit. Please try again.');
+        return;
+      }
+
+      // Success
+      console.log('Lead created:', result.data);
+      alert('Thank you! Your details have been submitted.');
+    } catch (err) {
+      console.error('Error submitting lead:', err);
+      alert('Something went wrong. Please try again.');
+    }
   };
 
   return (
@@ -95,16 +156,18 @@ const ContactForm = () => {
               <ErrorMessage error={errors.wantTo as any} />
             </div>
 
-            {/* Intent */}
+            {/* Bedrooms */}
             <div className={Styles.inputGroup}>
               <div className="relative z-1">
-                <label>Intent</label>
+                <label>Bedrooms</label>
                 <div className={Styles.radioGroup}>
-                  <label><input type="radio" value="buy" {...register("intent", { required: "Select intent" })} /> Buy</label>
-                  <label><input type="radio" value="rent" {...register("intent", { required: "Select intent" })} /> Rent</label>
+                  <label><input type="radio" value="1BHK" {...register("bedrooms", { required: "Select bedrooms" })} /> 1BHK</label>
+                  <label><input type="radio" value="2BHK" {...register("bedrooms", { required: "Select bedrooms" })} /> 2BHK</label>
+                  <label><input type="radio" value="3BHK" {...register("bedrooms", { required: "Select bedrooms" })} /> 3BHK</label>
+                  <label><input type="radio" value="4BHK" {...register("bedrooms", { required: "Select bedrooms" })} /> 4BHK</label>
                 </div>
               </div>
-              <ErrorMessage error={errors.intent as any} />
+              <ErrorMessage error={errors.bedrooms as any} />
             </div>
 
             {/* Property Type */}
@@ -151,9 +214,9 @@ const ContactForm = () => {
             {/* Contact Details */}
             <div className={Styles.inputGroup}>
               <div className="relative z-1">
-                <label htmlFor="contactDetails">Contact Details</label>
+                <label htmlFor="contactDetails">Address</label>
                 <textarea id="contactDetails" className={Styles.inputField}
-                  {...register("contactDetails")}
+                  {...register("contactDetails", { maxLength: 250 })}
                   placeholder="Any preferred time to call, alt phone/email, etc."></textarea>
               </div>
             </div>
