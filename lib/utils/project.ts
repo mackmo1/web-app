@@ -59,7 +59,7 @@ export function buildProjectWhereClause(params: ProjectQueryParams): Prisma.proj
   return where;
 }
 
-export function sanitizeCreateUpdateInput(body: any) {
+export function sanitizeCreateUpdateInput(body: Record<string, unknown>) {
   // Prepare data object respecting optional nullables
   return {
     name: body.name ?? undefined,
@@ -67,14 +67,14 @@ export function sanitizeCreateUpdateInput(body: any) {
     city: body.city ?? undefined,
     google_location: body.google_location ?? undefined,
     overview_area: body.overview_area ?? undefined,
-    near_by: toCSV(body.near_by),
+    near_by: toCSV(body.near_by as string | string[] | null | undefined),
     overview_floors: body.overview_floors ?? undefined,
     overview_rem1: body.overview_rem1 ?? undefined,
     overview_rem2: body.overview_rem2 ?? undefined,
     rooms: body.rooms ?? undefined,
     area_sqft: body.area_sqft ?? undefined,
     price_range: body.price_range ?? undefined,
-    usp: toCSV(body.usp),
+    usp: toCSV(body.usp as string | string[] | null | undefined),
     external_id: body.external_id ?? undefined,
   } as Prisma.projectsCreateInput;
 }

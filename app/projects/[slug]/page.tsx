@@ -3,6 +3,9 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getSalePropertyMediaByExternalId } from '@/lib/strapi';
 
+// Force dynamic rendering to avoid build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 function csvToArray(v?: string | null): string[] {
   return (v || '')
     .split(',')
@@ -23,7 +26,7 @@ function toEmbedUrl(url?: string | null): string | null {
       }
       return u.toString();
     }
-  } catch (_) {
+  } catch {
     // Fallback: if it's a plain string with google maps, best-effort append
     if (url.startsWith('http') && url.includes('google.com/maps')) {
       return url + (url.includes('?') ? '&' : '?') + 'output=embed';

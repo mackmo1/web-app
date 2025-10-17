@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { projects as ProjectsModel } from '@/lib/generated/prisma';
 import { ProjectApiResponse, ProjectResponse } from '@/lib/types/project';
 import { formatProjectResponse, sanitizeCreateUpdateInput } from '@/lib/utils/project';
 import { validateUpdateProjectRequest } from '@/lib/validation/project';
@@ -14,7 +15,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     const row = await prisma.projects.findUnique({ where: { id: projectId } });
     if (!row) return createNotFoundResponse('Project');
 
-    const formatted = formatProjectResponse(row as any);
+    const formatted = formatProjectResponse(row as ProjectsModel);
     return NextResponse.json<ProjectApiResponse<ProjectResponse>>({ success: true, data: formatted });
   } catch (error) {
     console.error('GET /api/projects/[id] error:', error);
@@ -40,7 +41,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const data = sanitizeCreateUpdateInput(body);
     const updated = await prisma.projects.update({ where: { id: projectId }, data });
 
-    const formatted = formatProjectResponse(updated as any);
+    const formatted = formatProjectResponse(updated as ProjectsModel);
     return NextResponse.json<ProjectApiResponse<ProjectResponse>>({ success: true, data: formatted, message: 'Project updated successfully' });
   } catch (error) {
     console.error('PUT /api/projects/[id] error:', error);

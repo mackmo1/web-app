@@ -75,7 +75,7 @@ export function validateWho(who: string): ValidationError | null {
     };
   }
 
-  if (!LEAD_WHO_OPTIONS.includes(who.toLowerCase() as any)) {
+  if (!LEAD_WHO_OPTIONS.includes(who.toLowerCase() as typeof LEAD_WHO_OPTIONS[number])) {
     return {
       field: 'who',
       message: `Invalid who value. Must be one of: ${LEAD_WHO_OPTIONS.join(', ')}`
@@ -94,7 +94,7 @@ export function validateIntent(intent: string): ValidationError | null {
     };
   }
 
-  if (!LEAD_INTENT_OPTIONS.includes(intent.toLowerCase() as any)) {
+  if (!LEAD_INTENT_OPTIONS.includes(intent.toLowerCase() as typeof LEAD_INTENT_OPTIONS[number])) {
     return {
       field: 'intent',
       message: `Invalid intent. Must be one of: ${LEAD_INTENT_OPTIONS.join(', ')}`
@@ -108,7 +108,7 @@ export function validateIntent(intent: string): ValidationError | null {
 export function validatePropertyType(propertyType: string): ValidationError | null {
   if (!propertyType) return null; // Optional field
 
-  if (!LEAD_PROPERTY_TYPES.includes(propertyType.toLowerCase() as any)) {
+  if (!LEAD_PROPERTY_TYPES.includes(propertyType.toLowerCase() as typeof LEAD_PROPERTY_TYPES[number])) {
     return {
       field: 'property_type',
       message: `Invalid property type. Must be one of: ${LEAD_PROPERTY_TYPES.join(', ')}`
@@ -123,7 +123,7 @@ export function validatePropertyType(propertyType: string): ValidationError | nu
 export function validateBedrooms(bedrooms: string): ValidationError | null {
   if (!bedrooms) return null; // Optional field
 
-  if (!LEAD_BEDROOM_OPTIONS.includes(bedrooms as any)) {
+  if (!LEAD_BEDROOM_OPTIONS.includes(bedrooms as typeof LEAD_BEDROOM_OPTIONS[number])) {
     return {
       field: 'bedrooms',
       message: `Invalid bedrooms value. Must be one of: ${LEAD_BEDROOM_OPTIONS.join(', ')}`
@@ -137,7 +137,7 @@ export function validateBedrooms(bedrooms: string): ValidationError | null {
 export function validateStatus(status: string): ValidationError | null {
   if (!status) return null; // Optional field
 
-  if (!LEAD_STATUS_OPTIONS.includes(status.toLowerCase() as any)) {
+  if (!LEAD_STATUS_OPTIONS.includes(status.toLowerCase() as typeof LEAD_STATUS_OPTIONS[number])) {
     return {
       field: 'status',
       message: `Invalid status. Must be one of: ${LEAD_STATUS_OPTIONS.join(', ')}`

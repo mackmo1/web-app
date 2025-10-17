@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { 
-  UpdateLeadRequest, 
-  LeadApiResponse, 
-  LeadResponse 
+import { Prisma } from '@/lib/generated/prisma';
+import {
+  LeadApiResponse,
+  LeadResponse
 } from '@/lib/types/lead';
 import { formatLeadResponse } from '@/lib/utils/lead';
 import { validateUpdateLeadRequest } from '@/lib/validation/lead';
-import { 
+import {
   handleApiError,
   createValidationErrorResponse,
   createNotFoundResponse,
-  validateLeadId 
+  validateLeadId
 } from '@/lib/utils/error-handler';
 
 // GET /api/leads/[id] - Fetch a single lead by ID
@@ -100,8 +100,8 @@ export async function PUT(
     }
 
     // Prepare update data (only include defined fields)
-    const updateData: any = {};
-    
+    const updateData: Prisma.LeadUpdateInput = {};
+
     if (body.who !== undefined) updateData.who = body.who.toLowerCase();
     if (body.intent !== undefined) updateData.intent = body.intent.toLowerCase();
     if (body.property_type !== undefined) {

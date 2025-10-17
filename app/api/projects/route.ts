@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { projects as ProjectsModel } from '@/lib/generated/prisma';
 import { ProjectApiResponse, ProjectResponse, ProjectsListResponse, ProjectQueryParams } from '@/lib/types/project';
 import { buildProjectWhereClause, formatProjectResponse, sanitizeCreateUpdateInput } from '@/lib/utils/project';
 import { validateCreateProjectRequest } from '@/lib/validation/project';
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
     const data = sanitizeCreateUpdateInput(body);
 
     const created = await prisma.projects.create({ data });
-    const formatted = formatProjectResponse(created as any);
+    const formatted = formatProjectResponse(created as ProjectsModel);
 
     return NextResponse.json<ProjectApiResponse<ProjectResponse>>({
       success: true,

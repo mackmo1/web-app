@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { 
-  CreateUserRequest, 
-  ApiResponse, 
-  UserResponse, 
-  UsersListResponse,
-  UserQueryParams 
+import {
+  CreateUserRequest,
+  ApiResponse,
+  UserResponse,
+  UsersListResponse
 } from '@/lib/types/user';
-import { 
-  formatUserResponse, 
-  isValidEmail, 
-  isValidMobile, 
+import {
+  formatUserResponse,
+  isValidEmail,
+  isValidMobile,
   isValidUserType,
   hashPassword,
-  buildUserWhereClause 
+  buildUserWhereClause
 } from '@/lib/utils/user';
 
 // GET /api/users - Fetch all users with optional filtering and pagination

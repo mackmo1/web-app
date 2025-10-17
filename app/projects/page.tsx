@@ -2,6 +2,9 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 
+// Force dynamic rendering to avoid build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 function csvToArray(v?: string | null): string[] {
   return (v || '')
     .split(',')

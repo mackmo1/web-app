@@ -23,7 +23,7 @@ export type StrapiEntity<T> = {
 
 export type StrapiResponse<T> = {
   data: T;
-  meta?: any;
+  meta?: Record<string, unknown>;
 };
 
 function absoluteUrl(url: string): string {
@@ -45,7 +45,7 @@ function getCollectionPath(): string {
   return '/api/sale-properties';
 }
 
-async function strapiFetch<T = any>(path: string, init?: RequestInit): Promise<T> {
+async function strapiFetch<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   const base = (process.env.STRAPI_URL || '').replace(/\/$/, '');
   if (!base) throw new Error('STRAPI_URL is not set');
 
@@ -89,27 +89,45 @@ export async function getSalePropertyMediaByExternalId(externalId: string): Prom
   qs.append('populate[brochure]', 'true');
 
   const basePath = getCollectionPath();
-  const resp = await strapiFetch<StrapiResponse<Array<StrapiEntity<any>>>>(`${basePath}?${qs.toString()}`);
+
+  // Define the expected entity structure
+  interface StrapiMediaFile {
+    url?: string;
+    formats?: {
+      large?: { url: string };
+      medium?: { url: string };
+      small?: { url: string };
+      thumbnail?: { url: string };
+    };
+  }
+
+  interface SalePropertyEntity {
+    hero_image?: StrapiMediaFile | StrapiMediaFile[];
+    property_images?: StrapiMediaFile | StrapiMediaFile[];
+    brochure?: StrapiMediaFile | StrapiMediaFile[];
+  }
+
+  const resp = await strapiFetch<StrapiResponse<SalePropertyEntity[]>>(`${basePath}?${qs.toString()}`);
   const entity = resp.data?.[0];
   if (!entity) {
     return { heroUrl: null, imageUrls: [], brochureUrl: null };
   }
 
   // Strapi v5 returns media directly, not wrapped in .data
-  const heroData = entity?.hero_image as any;
+  const heroData = entity?.hero_image;
   const heroItem = Array.isArray(heroData) ? heroData[0] : heroData;
 
-  const galleryData = entity?.property_images as any;
-  const galleryArr: any[] = Array.isArray(galleryData)
+  const galleryData = entity?.property_images;
+  const galleryArr: StrapiMediaFile[] = Array.isArray(galleryData)
     ? galleryData
     : galleryData
     ? [galleryData]
     : [];
 
-  const brochureData = entity?.brochure as any;
+  const brochureData = entity?.brochure;
   const brochureItem = Array.isArray(brochureData) ? brochureData[0] : brochureData;
 
-  const pickBestUrl = (file: any): string | null => {
+  const pickBestUrl = (file: StrapiMediaFile | undefined): string | null => {
     if (!file) return null;
     // Strapi v5: media fields are directly on the object, not wrapped in .attributes
     const direct = file.url;

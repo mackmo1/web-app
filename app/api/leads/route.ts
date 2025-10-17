@@ -1,25 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { 
-  CreateLeadRequest, 
-  LeadApiResponse, 
-  LeadResponse, 
+import {
+  LeadApiResponse,
+  LeadResponse,
   LeadsListResponse,
-  LeadQueryParams 
+  LeadQueryParams
 } from '@/lib/types/lead';
-import { 
+import {
   formatLeadResponse,
-  buildLeadWhereClause 
+  buildLeadWhereClause
 } from '@/lib/utils/lead';
-import { 
-  validateCreateLeadRequest,
-  ValidationError 
+import {
+  validateCreateLeadRequest
 } from '@/lib/validation/lead';
-import { 
+import {
   handleApiError,
   createValidationErrorResponse,
-  createBadRequestResponse,
-  validatePagination 
+  validatePagination
 } from '@/lib/utils/error-handler';
 
 // GET /api/leads - Fetch all leads with optional filtering and pagination

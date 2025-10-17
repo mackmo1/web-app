@@ -19,6 +19,24 @@ type ContactFormData = {
   message: string;
 };
 
+// Lead API payload type
+type LeadPayload = {
+  who: string;
+  agent: string;
+  status: string;
+  name: string;
+  phone: string;
+  email_id: string;
+  location: string;
+  pin_no: string;
+  intent: string;
+  bedrooms: string;
+  property_type: string;
+  budget: string;
+  address: string;
+  message: string;
+};
+
 // Error message component
 const ErrorMessage = ({ error }: { error?: { message?: string } }) =>
   error ? <p className="text-red-500 text-sm mt-1">{error.message}</p> : null;
@@ -71,7 +89,7 @@ const ContactForm = () => {
       }
     };
 
-    const payload: any = {
+    const payload: LeadPayload = {
       // Hardcoded per requirement
       who: 'website',
       agent: 'none',
@@ -81,12 +99,12 @@ const ContactForm = () => {
       email_id: data.userEmail,
       phone: data.mobileNumber,
       location: data.city,
-      pin_no: data.zipCode || undefined,
+      pin_no: data.zipCode || '',
       message: data.message,
-      property_type: mapPropertyType(data.propertyType),
-      budget: mapBudget(data.budget),
-      bedrooms: data.bedrooms || undefined,
-      address: data.contactDetails || undefined,
+      property_type: mapPropertyType(data.propertyType) || '',
+      budget: mapBudget(data.budget) || '',
+      bedrooms: data.bedrooms || '',
+      address: data.contactDetails || '',
       intent: data.wantTo,
     };
 
@@ -153,7 +171,7 @@ const ContactForm = () => {
                   <label><input type="radio" value="rent" {...register("wantTo", { required: "Select one" })} /> Rent</label>
                 </div>
               </div>
-              <ErrorMessage error={errors.wantTo as any} />
+              <ErrorMessage error={errors.wantTo} />
             </div>
 
             {/* Bedrooms */}
@@ -167,7 +185,7 @@ const ContactForm = () => {
                   <label><input type="radio" value="4BHK" {...register("bedrooms", { required: "Select bedrooms" })} /> 4BHK</label>
                 </div>
               </div>
-              <ErrorMessage error={errors.bedrooms as any} />
+              <ErrorMessage error={errors.bedrooms} />
             </div>
 
             {/* Property Type */}
@@ -181,7 +199,7 @@ const ContactForm = () => {
                   <label><input type="radio" value="plot" {...register("propertyType", { required: "Select type" })} /> Plot</label>
                 </div>
               </div>
-              <ErrorMessage error={errors.propertyType as any} />
+              <ErrorMessage error={errors.propertyType} />
             </div>
 
             {/* Budget */}
