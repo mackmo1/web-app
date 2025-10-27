@@ -5,6 +5,8 @@ import { useForm, FormProvider, Controller, useFormContext } from 'react-hook-fo
 import Styles from "./auth.module.css";
 import Link from 'next/link';
 import Image from 'next/image';
+import { X } from "lucide-react";
+
 type RegisterFormValues = {
   userType: string;
   userName: string;
@@ -15,7 +17,9 @@ type RegisterFormValues = {
   profession: string;
   poliyText: boolean;
 };
-const Register = () => {
+type RegisterProps = { onClose?: () => void; className?: string };
+
+const Register: React.FC<RegisterProps> = ({ onClose, className }) => {
   const methods = useForm<RegisterFormValues>({
     mode: "onTouched",
     defaultValues: {
@@ -35,6 +39,19 @@ const Register = () => {
     formState: { errors },
     register,
   } = methods;
+
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else if (typeof window !== 'undefined') {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.assign('/');
+      }
+    }
+  };
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
@@ -69,8 +86,18 @@ const Register = () => {
   };
 
   return (
-    <div className={Styles.loginContainer}>
-      <div className={Styles.loginContainer_in}>
+    <div className={`${Styles.loginContainer} ${className ?? ''}`}>
+
+      <div className={`${Styles.loginContainer_in} relative`}>
+        <button
+          type="button"
+          aria-label="Close register form"
+          onClick={handleClose}
+          className="absolute top-2 right-2 md:top-3 md:right-3 h-11 w-11 rounded-md inline-flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-colors z-10"
+        >
+          <X className="h-5 w-5" aria-hidden="true" />
+        </button>
+
         <div className={Styles.login_heading}>
           <Link href="/login" className={Styles.loginBack}>
             <Image src="/back-icon.svg" alt="back-icon" width={20} height={20} />

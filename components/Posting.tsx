@@ -3,6 +3,8 @@
 import React from 'react';
 import { useForm, FormProvider, Controller, useFormContext } from 'react-hook-form';
 import Styles from "./posting.module.css";
+import { X } from "lucide-react";
+
 
 // Property model mapping according to prisma.schema property table
 // id: BigInt (server-side)
@@ -46,7 +48,9 @@ export type PostingFormInputs = {
 const ErrorMessage = ({ error }: { error?: { message?: string } }) =>
   error ? <p className="text-red-500 text-sm mt-1">{error.message}</p> : null;
 
-const PostingForm = () => {
+type PostingFormProps = { onClose?: () => void; className?: string };
+
+const PostingForm: React.FC<PostingFormProps> = ({ onClose, className }) => {
   const methods = useForm<PostingFormInputs>({
     mode: "onTouched",
     defaultValues: {
@@ -70,6 +74,19 @@ const PostingForm = () => {
   });
 
   const { handleSubmit, formState: { errors }, register } = methods;
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else if (typeof window !== 'undefined') {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.assign('/');
+      }
+    }
+  };
+
 
   const onSubmit = async (data: PostingFormInputs) => {
     try {
@@ -108,7 +125,16 @@ const PostingForm = () => {
   };
 
   return (
-    <div className={Styles.loginContainer}>
+    <div className={`${Styles.loginContainer} relative ${className ?? ''}`}>
+      <button
+        type="button"
+        aria-label="Close posting form"
+        onClick={handleClose}
+        className="absolute top-2 right-2 md:top-3 md:right-3 h-11 w-11 rounded-md inline-flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-colors z-10"
+      >
+        <X className="h-5 w-5" aria-hidden="true" />
+      </button>
+
       <div className={Styles.loginContainer_in}>
         <div className={Styles.login_heading}>
           <span>Post Property</span>

@@ -3,6 +3,8 @@
 import React from 'react';
 import { useForm, FormProvider, SubmitHandler } from 'react-hook-form';
 import Styles from "./contact.module.css";
+import { X } from "lucide-react";
+
 
 // Define form data type
 type ContactFormData = {
@@ -41,7 +43,9 @@ type LeadPayload = {
 const ErrorMessage = ({ error }: { error?: { message?: string } }) =>
   error ? <p className="text-red-500 text-sm mt-1">{error.message}</p> : null;
 
-const ContactForm = () => {
+type ContactFormProps = { onClose?: () => void; className?: string };
+
+const ContactForm: React.FC<ContactFormProps> = ({ onClose, className }) => {
   const methods = useForm<ContactFormData>({
     mode: "onTouched",
     defaultValues: {
@@ -64,6 +68,18 @@ const ContactForm = () => {
     formState: { errors },
     register,
   } = methods;
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else if (typeof window !== 'undefined') {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.assign('/');
+      }
+    }
+  };
 
   // Correctly typed submit handler
   const onSubmit: SubmitHandler<ContactFormData> = async (data) => {
@@ -132,7 +148,16 @@ const ContactForm = () => {
   };
 
   return (
-    <div className={Styles.contactForm}>
+    <div className={`${Styles.contactForm} relative ${className ?? ''}`}>
+      <button
+        type="button"
+        aria-label="Close contact form"
+        onClick={handleClose}
+        className="absolute top-2 right-2 md:top-3 md:right-3 h-11 w-11 rounded-md inline-flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-colors z-10"
+      >
+        <X className="h-5 w-5" aria-hidden="true" />
+      </button>
+
       <div className={Styles.contactFormContent}>
         <div className={Styles.contactHeading}>Get in Touch</div>
         <p>Have queries? Simply fill in the form below and we will get in touch with you.</p>

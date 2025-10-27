@@ -5,8 +5,12 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppChat } from "@/components/WhatsAppChat";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+
 
 const EnqueryPage = () => {
+  const router = useRouter();
+
   return (
       <>
         <div className="min-h-screen flex flex-col">
@@ -15,7 +19,7 @@ const EnqueryPage = () => {
             <figure className="poster">
               <Image src="/contact-poster.jpg" alt="contact poster" width={720} height={580} />
             </figure>
-            <PostingForm />
+            <PostingForm onClose={() => router.back()} />
           </div>
           <Footer />
           <WhatsAppChat />

@@ -5,6 +5,8 @@ import { useForm, FormProvider, Controller, useFormContext } from 'react-hook-fo
 import Styles from "./auth.module.css";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { X } from "lucide-react";
+
 
 // ✅ Define a proper type for form inputs
 type LoginFormInputs = {
@@ -14,7 +16,9 @@ type LoginFormInputs = {
   poliyText: boolean;
 };
 
-const Login = () => {
+type LoginProps = { onClose?: () => void; className?: string };
+
+const Login: React.FC<LoginProps> = ({ onClose, className }) => {
   const methods = useForm<LoginFormInputs>({
     mode: "onTouched",
     defaultValues: {
@@ -33,6 +37,19 @@ const Login = () => {
 
   // ✅ Use typed form data
   const router = useRouter();
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else if (typeof window !== 'undefined') {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.assign('/');
+      }
+    }
+  };
+
 
   // ✅ Use typed form data
   const onSubmit = async (data: LoginFormInputs) => {
@@ -58,8 +75,18 @@ const Login = () => {
   };
 
   return (
-    <div className={Styles.loginContainer}>
-      <div className={Styles.loginContainer_in}>
+    <div className={`${Styles.loginContainer} ${className ?? ''}`}>
+
+      <div className={`${Styles.loginContainer_in} relative`}>
+        <button
+          type="button"
+          aria-label="Close login form"
+          onClick={handleClose}
+          className="absolute top-2 right-2 md:top-3 md:right-3 h-11 w-11 rounded-md inline-flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-colors z-10"
+        >
+          <X className="h-5 w-5" aria-hidden="true" />
+        </button>
+
         <div className={Styles.login_heading}>
           <span>Login</span>
         </div>
@@ -67,7 +94,7 @@ const Login = () => {
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className={Styles.wrapper}>
-              
+
               {/* User Type Radio Group */}
               <div className={Styles.radioGroupWrap}>
                 <span className='font-semibold'>Are you</span>
@@ -76,7 +103,7 @@ const Login = () => {
                   <p className="text-red-500 text-sm mt-1">{errors.userType.message}</p>
                 )}
               </div>
-              
+
               {/* Email Input */}
               <div className={Styles.inputGroup}>
                 <div className="relative z-1">
@@ -99,7 +126,7 @@ const Login = () => {
                   <p className="text-red-500 text-sm mt-1">{errors.userEmail.message}</p>
                 )}
               </div>
-              
+
               {/* Password Input */}
               <div className={Styles.inputGroup}>
                 <div className="relative z-1">
@@ -122,7 +149,7 @@ const Login = () => {
                   <p className="text-red-500 text-sm mt-1">{errors.userPass.message}</p>
                 )}
               </div>
-              
+
               {/* Policy Checkbox */}
               <div className={Styles.buttonGroup}>
                 <div className={Styles.checkBoxGroup}>

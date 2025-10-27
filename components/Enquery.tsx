@@ -3,6 +3,8 @@
 import React from 'react';
 import { useForm, FormProvider, Controller, useFormContext } from 'react-hook-form';
 import Styles from "./enquery.module.css";
+import { X } from "lucide-react";
+
 
 type EnquiryFormInputs = {
   userName: string;
@@ -24,7 +26,9 @@ type EnquiryFormInputs = {
 const ErrorMessage = ({ error }: { error?: { message?: string } }) =>
   error ? <p className="text-red-500 text-sm mt-1">{error.message}</p> : null;
 
-const EnqueryForm = () => {
+type EnqueryFormProps = { onClose?: () => void; className?: string };
+
+const EnqueryForm: React.FC<EnqueryFormProps> = ({ onClose, className }) => {
   const methods = useForm<EnquiryFormInputs>({
     mode: "onTouched",
     defaultValues: {
@@ -51,12 +55,34 @@ const EnqueryForm = () => {
     register,
   } = methods;
 
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else if (typeof window !== 'undefined') {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.assign('/');
+      }
+    }
+  };
+
+
   const onSubmit = (data: EnquiryFormInputs) => {
     console.log("Form submitted:", data);
   };
 
   return (
-    <div className={Styles.loginContainer}>
+    <div className={`${Styles.loginContainer} relative ${className ?? ''}`}>
+      <button
+        type="button"
+        aria-label="Close enquery form"
+        onClick={handleClose}
+        className="absolute top-2 right-2 md:top-3 md:right-3 h-11 w-11 rounded-md inline-flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-colors z-10"
+      >
+        <X className="h-5 w-5" aria-hidden="true" />
+      </button>
+
       <div className={Styles.loginContainer_in}>
         <div className={Styles.login_heading}>
           <span>List Property Free</span>

@@ -1,0 +1,292 @@
+// Proposal: Mobile-first, scalable real estate schema for Supabase (Postgres) via Prisma
+// This file is a proposal; do not replace your active prisma/schema.prisma yet.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../lib/generated/prisma_proposed"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DIRECT_URL")
+}
+
+// --- Enums ---
+enum ListingStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum ListingType {
+  SALE
+  RENT
+}
+
+enum PropertyCategory {
+  RESIDENTIAL
+  COMMERCIAL
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  VILLA
+  STUDIO
+  DUPLEX
+  TOWNHOUSE
+  PLOT
+  OFFICE
+  SHOP
+  WAREHOUSE
+  OTHER
+}
+
+enum MediaSource {
+  STRAPI
+  SUPABASE
+  EXTERNAL
+}
+
+enum MediaKind {
+  HERO
+  GALLERY
+  FLOORPLAN
+  DOCUMENT
+}
+
+enum AreaUnit {
+  SQFT
+  SQM
+  ACRE
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  CLOSED
+  ARCHIVED
+}
+
+enum Platform {
+  IOS
+  ANDROID
+  WEB
+}
+
+enum SavedSearchVisibility {
+  PRIVATE
+  SHARED
+}
+
+// --- Core Users/Agents ---
+model AgentProfile {
+  id         BigInt   @id @default(autoincrement())
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  userId     BigInt   @unique
+  user       user     @relation(fields: [userId], references: [id])
+  phone      String?  @db.VarChar
+  whatsapp   String?  @db.VarChar
+  verified   Boolean  @default(false)
+  licenseNo  String?  @db.VarChar
+  rating     Decimal? @db.Decimal(3,2)
+  company    String?  @db.VarChar
+  website    String?  @db.VarChar
+  city       String?  @db.VarChar
+  bio        String?
+  avatarUrl  String?
+
+  listings   Listing[]
+  enquiries  Enquiry[] @relation("EnquiryAssignedAgent")
+}
+
+// --- Properties (Listings) ---
+model Listing {
+  id            BigInt           @id @default(autoincrement())
+  createdAt     DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime         @updatedAt @db.Timestamptz(6)
+  title         String
+  slug          String           @unique
+  description   String?
+  listingType   ListingType
+  category      PropertyCategory
+  propertyType  PropertyType
+  status        ListingStatus    @default(ACTIVE)
+  price         Decimal          @db.Decimal(12,2)
+  currency      String           @default("INR") @db.VarChar
+
+  // Location
+  city          String           @db.VarChar
+  state         String?          @db.VarChar
+  country       String?          @default("IN") @db.VarChar
+  address       String?
+  latitude      Float?
+  longitude     Float?
+
+  // Specs
+  bedrooms      Int?
+  bathrooms     Int?
+  areaValue     Int?             // store primary area value (e.g., sqft)
+  areaUnit      AreaUnit?        @default(SQFT)
+  parking       Boolean?
+  facing        String?          @db.VarChar
+  yearBuilt     Int?
+
+  // Ownership/association
+  ownerUserId   BigInt?
+  owner         user?            @relation(fields: [ownerUserId], references: [id])
+  agentId       BigInt?
+  agent         AgentProfile?    @relation(fields: [agentId], references: [id])
+
+  // External/cms
+  externalId    String?          @db.VarChar   // e.g., Strapi entry id
+
+  amenities     ListingAmenity[]
+  media         ListingMedia[]
+  enquiries     Enquiry[]
+  favorites     Favorite[]
+
+  @@index([status, listingType, city])
+  @@index([price])
+  @@index([propertyType])
+  @@index([bedrooms])
+  @@index([latitude, longitude])
+}
+
+model Amenity {
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now()) @db.Timestamptz(6)
+  name      String      @unique @db.VarChar
+  slug      String      @unique @db.VarChar
+  icon      String?     @db.VarChar
+
+  listings  ListingAmenity[]
+}
+
+model ListingAmenity {
+  listingId BigInt
+  amenityId Int
+
+  listing   Listing @relation(fields: [listingId], references: [id])
+  amenity   Amenity @relation(fields: [amenityId], references: [id])
+
+  @@id([listingId, amenityId])
+  @@index([amenityId])
+}
+
+model ListingMedia {
+  id         BigInt      @id @default(autoincrement())
+  createdAt  DateTime    @default(now()) @db.Timestamptz(6)
+  listingId  BigInt
+  listing    Listing     @relation(fields: [listingId], references: [id])
+
+  source     MediaSource
+  kind       MediaKind    @default(GALLERY)
+  externalId String?      @db.VarChar // e.g., Strapi asset id
+
+  bucket     String?      @db.VarChar // Supabase storage bucket
+  path       String?      @db.VarChar // Supabase storage path
+  url        String?                   // Direct/Strapi URL
+  cdnUrl     String?                   // Proxied/CDN URL (recommended to store)
+  alt        String?
+  width      Int?
+  height     Int?
+  sortOrder  Int?         @default(0)
+
+  @@index([listingId])
+  @@index([source])
+}
+
+// --- User interactions ---
+model Favorite {
+  userId    BigInt
+  listingId BigInt
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  user      user    @relation(fields: [userId], references: [id])
+  listing   Listing @relation(fields: [listingId], references: [id])
+
+  @@id([userId, listingId])
+  @@index([listingId])
+}
+
+model SavedSearch {
+  id         BigInt    @id @default(autoincrement())
+  userId     BigInt
+  user       user      @relation(fields: [userId], references: [id])
+  name       String    @db.VarChar
+  visibility SavedSearchVisibility @default(PRIVATE)
+  filters    Json
+  createdAt  DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([filters], type: Gin)
+}
+
+model Enquiry {
+  id              BigInt        @id @default(autoincrement())
+  createdAt       DateTime      @default(now()) @db.Timestamptz(6)
+  listingId       BigInt?
+  listing         Listing?      @relation(fields: [listingId], references: [id])
+
+  userId          BigInt?
+  user            user?         @relation(fields: [userId], references: [id])
+
+  contactName     String?       @db.VarChar
+  contactEmail    String?       @db.VarChar
+  contactPhone    String        @db.VarChar
+  message         String?
+
+  status          EnquiryStatus @default(NEW)
+  assignedAgentId BigInt?
+  assignedAgent   AgentProfile? @relation("EnquiryAssignedAgent", fields: [assignedAgentId], references: [id])
+
+  events          EnquiryEvent[]
+
+  @@index([listingId])
+  @@index([userId])
+  @@index([status])
+  @@index([assignedAgentId])
+}
+
+model EnquiryEvent {
+  id         BigInt   @id @default(autoincrement())
+  enquiryId  BigInt
+  enquiry    Enquiry  @relation(fields: [enquiryId], references: [id])
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  type       String   @db.VarChar // e.g., STATUS_CHANGED, NOTE_ADDED, CALL_LOGGED
+  note       String?
+
+  @@index([enquiryId])
+}
+
+// --- Notifications (for mobile app) ---
+model NotificationToken {
+  id         BigInt   @id @default(autoincrement())
+  userId     BigInt
+  user       user     @relation(fields: [userId], references: [id])
+  platform   Platform
+  provider   String?  @db.VarChar // e.g., FCM
+  token      String   @unique
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  lastUsedAt DateTime?
+  revoked    Boolean  @default(false)
+
+  @@index([userId])
+}
+
+// --- Optional analytics ---
+model SearchLog {
+  id         BigInt   @id @default(autoincrement())
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  userId     BigInt?
+  user       user?    @relation(fields: [userId], references: [id])
+  query      String?  // free-text query
+  filters    Json?    // filters snapshot
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
