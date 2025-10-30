@@ -1,31 +1,45 @@
-import { Facebook, Twitter, Instagram, Linkedin, Phone, Mail, MapPin } from "lucide-react"
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Phone,
+  Mail,
+  MapPin,
+} from "lucide-react";
+import Link from "next/link";
 
 export function Footer() {
   const footerMenus = [
     {
       title: "Services",
-      items: ["Buy Properties", "Rent Properties", "Sell Properties", "Property Management"]
+      items: [
+        "Buy Properties",
+        "Rent Properties",
+        "Sell Properties",
+        "Property Management",
+      ],
     },
     {
       title: "Company",
-      items: ["About Us", "Our Team", "Careers", "Blog"]
+      items: ["About Us", "Our Team", "Careers", "Blog"],
     },
     {
       title: "Support",
-      items: ["Contact Us", "FAQ", "Help Center", "Terms of Service"]
+      items: ["Contact Us", "FAQ", "Help Center", "Terms of Service"],
     },
     {
       title: "Locations",
-      items: ["New York", "Los Angeles", "Chicago", "Miami"]
-    }
-  ]
+      items: ["New York", "Los Angeles", "Chicago", "Miami"],
+    },
+  ];
 
   const socialIcons = [
     { icon: Facebook, href: "#", label: "Facebook" },
     { icon: Twitter, href: "#", label: "Twitter" },
     { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Linkedin, href: "#", label: "LinkedIn" }
-  ]
+    { icon: Linkedin, href: "#", label: "LinkedIn" },
+  ];
 
   return (
     <footer className="bg-gray-900 text-white">
@@ -35,9 +49,10 @@ export function Footer() {
           <div className="lg:col-span-2">
             <h3 className="mb-4">PrimeProperties</h3>
             <p className="text-gray-300 mb-6 leading-relaxed">
-              Your trusted partner in finding the perfect property. We specialize in residential and commercial real estate solutions.
+              Your trusted partner in finding the perfect property. We
+              specialize in residential and commercial real estate solutions.
             </p>
-            
+
             {/* Contact Info */}
             <div className="space-y-3 text-gray-300">
               <div className="flex items-center space-x-3">
@@ -62,12 +77,12 @@ export function Footer() {
               <ul className="space-y-2">
                 {menu.items.map((item, itemIndex) => (
                   <li key={itemIndex}>
-                    <a 
-                      href="#" 
+                    <Link
+                      href="#"
                       className="text-gray-300 hover:text-white transition-colors duration-200"
                     >
                       {item}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -80,11 +95,11 @@ export function Footer() {
           <p className="text-gray-400 mb-4 sm:mb-0">
             © 2024 PrimeProperties. All rights reserved.
           </p>
-          
+
           {/* Social Media Icons */}
           <div className="flex space-x-4">
             {socialIcons.map((social, index) => {
-              const IconComponent = social.icon
+              const IconComponent = social.icon;
               return (
                 <a
                   key={index}
@@ -94,11 +109,11 @@ export function Footer() {
                 >
                   <IconComponent className="w-5 h-5" />
                 </a>
-              )
+              );
             })}
           </div>
         </div>
       </div>
     </footer>
-  )
+  );
 }
