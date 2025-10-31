@@ -1,4 +1,6 @@
-import { useState } from 'react'
+"use client";
+
+import { useCallback, useEffect, useState } from 'react'
 import { AdvancedSearchBar } from './AdvancedSearchBar'
 import { DetailedPropertyCard } from './DetailedPropertyCard'
 import { PropertyCard } from './PropertyCard'
@@ -13,214 +15,170 @@ interface SearchFilters {
 }
 
 export function BuyPage() {
-  const [searchResults, setSearchResults] = useState<typeof mockProperties>([])
+  // Local shapes used to adapt API data to existing cards without changing UI
+  type CardItem = {
+    id: string
+    image: string
+    title: string
+    price: string
+    location: string
+    beds: number
+    baths: number
+    area: string
+    type: 'rent' | 'buy'
+    propertyType: string
+  }
+  type DetailItem = {
+    id: string
+    images: string[]
+    title: string
+    price: string
+    location: string
+    beds: number
+    baths: number
+    area: string
+    type: 'rent' | 'buy'
+    propertyType: string
+    description: string
+    amenities: string[]
+    postedDate: string
+    agentName: string
+    isVerified?: boolean
+  }
+
+  const [initialProperties, setInitialProperties] = useState<CardItem[]>([])
+  const [searchResults, setSearchResults] = useState<DetailItem[]>([])
+
+
+
+
+
+
   const [isSearched, setIsSearched] = useState(false)
   const [loading, setLoading] = useState(false)
-  const buyProperties = [
-    {
-      id: '1',
-      image: 'https://images.unsplash.com/photo-1751998816246-c63d182770c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBhcGFydG1lbnQlMjBpbnRlcmlvcnxlbnwxfHx8fDE3NTUyNjc0MzF8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      title: 'Luxury Downtown Apartment',
-      price: '$2,500',
-      location: 'Downtown, New York',
-      beds: 2,
-      baths: 2,
-      area: '1,200 sq ft',
-      type: 'buy' as const,
-      propertyType: 'Apartment'
-    },
-    {
-      id: '2',
-      image: 'https://images.unsplash.com/photo-1737737210863-387afd35344e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3p5JTIwYXBhcnRtZW50JTIwbGl2aW5nJTIwcm9vbXxlbnwxfHx8fDE3NTUyNjcxNTJ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      title: 'Cozy Studio in Brooklyn',
-      price: '$1,800',
-      location: 'Brooklyn Heights, NY',
-      beds: 1,
-      baths: 1,
-      area: '750 sq ft',
-      type: 'buy' as const,
-      propertyType: 'Studio'
-    },
-    {
-      id: '3',
-      image: 'https://images.unsplash.com/photo-1556889882-50d7a74e8be4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHVkaW8lMjBhcGFydG1lbnQlMjByZW50YWx8ZW58MXx8fHwxNzU1Mjg2OTgwfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      title: 'Modern Loft Space',
-      price: '$3,200',
-      location: 'SoHo, Manhattan',
-      beds: 1,
-      baths: 1,
-      area: '900 sq ft',
-      type: 'buy' as const,
-      propertyType: 'Loft'
-    },
-    {
-      id: '4',
-      image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBob3VzZSUyMGV4dGVyaW9yfGVufDF8fHx8MTc1NTIxNzk0M3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      title: 'Modern Family House',
-      price: '$750,000',
-      location: 'Westchester, NY',
-      beds: 4,
-      baths: 3,
-      area: '2,400 sq ft',
-      type: 'buy' as const,
-      propertyType: 'House'
-    },
-    {
-      id: '5',
-      image: 'https://images.unsplash.com/photo-1707075108813-edefd7b3308d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aWxsYSUyMHByb3BlcnR5JTIwcmVhbCUyMGVzdGF0ZXxlbnwxfHx8fDE3NTUyODY5NzZ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      title: 'Luxury Villa with Pool',
-      price: '$1,250,000',
-      location: 'Long Island, NY',
-      beds: 5,
-      baths: 4,
-      area: '3,800 sq ft',
-      type: 'buy' as const,
-      propertyType: 'Villa'
-    },
-    {
-      id: '6',
-      image: 'https://images.unsplash.com/photo-1705363134717-0210c88d2689?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYW1pbHklMjBob21lJTIwc2FsZXxlbnwxfHx8fDE3NTUyODY5ODB8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-      title: 'Charming Suburban Home',
-      price: '$525,000',
-      location: 'Queens, NY',
-      beds: 3,
-      baths: 2,
-      area: '1,800 sq ft',
-      type: 'buy' as const,
-      propertyType: 'House'
+  const [error, setError] = useState<string | null>(null)
+
+  // Define API response type we expect from /api/properties
+  type ApiProperty = {
+    id: string | number
+    listing?: 'buy' | 'rent' | string
+    type?: string
+    city?: string
+    project?: string
+    address?: string
+    rooms?: number | string | null
+    price?: number | string | null
+    area?: number | string | null
+    message?: string | null
+    created_at?: string | null
+  }
+
+  // Helper to map API property -> CardItem
+  const mapToCardItem = useCallback((p: ApiProperty): CardItem => ({
+    id: String(p.id),
+    image: '/hero_image_1.jpg',
+    title: p.project ?? '-',
+    price: String(p.price ?? ''),
+    location: [p.address, p.city].filter(Boolean).join(', '),
+    beds: Number(p.rooms ?? 0),
+    baths: 0, // UI expects this field; no column yet
+    area: p.area != null ? String(p.area) : '',
+    type: (p.listing as 'buy' | 'rent') ?? 'buy',
+    propertyType: p.type ?? ''
+  }), [])
+
+  // Helper to map API property -> DetailItem
+  const mapToDetailItem = (p: ApiProperty): DetailItem => ({
+    id: String(p.id),
+    images: ['/hero_image_1.jpg'],
+    title: p.project ?? '-',
+    price: String(p.price ?? ''),
+    location: [p.address, p.city].filter(Boolean).join(', '),
+    beds: Number(p.rooms ?? 0),
+    baths: 0, // UI expects this field; no column yet
+    area: p.area != null ? String(p.area) : '',
+    type: (p.listing as 'buy' | 'rent') ?? 'buy',
+    propertyType: p.type ?? '',
+    description: p.message ?? '',
+    amenities: [],
+    postedDate: (() => {
+      const created = p.created_at ? new Date(p.created_at) : null
+      if (!created) return ''
+      const days = Math.floor((Date.now() - created.getTime()) / (1000 * 60 * 60 * 24))
+      if (days <= 0) return 'today'
+      if (days === 1) return '1 day ago'
+      return `${days} days ago`
+    })(),
+    agentName: '—',
+    isVerified: false,
+  })
+
+  // Initial load for "Buy" grid
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        setError(null)
+        const res = await fetch(`/api/properties?listing=buy&limit=9`, { cache: 'no-store' })
+        const json = await res.json()
+        const items: ApiProperty[] = (json?.data?.properties ?? []) as ApiProperty[]
+        if (!cancelled) setInitialProperties(items.map(mapToCardItem))
+      } catch {
+        if (!cancelled) setError('Failed to load properties')
+      }
     }
-  ]
+    load()
+    return () => { cancelled = true }
+  }, [mapToCardItem])
 
-  // Mock property data for search results
-  const mockProperties = [
-    {
-      id: '1',
-      images: ['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBob3VzZSUyMGV4dGVyaW9yfGVufDF8fHx8MTc1NTIxNzk0M3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'],
-      title: 'Modern Family House with Garden',
-      price: '$750,000',
-      location: 'Westchester, New York',
-      beds: 4,
-      baths: 3,
-      area: '2,400 sq ft',
-      type: 'buy' as const,
-      propertyType: 'House',
-      description: 'Beautiful modern family house featuring an open-plan design, spacious rooms, and a lovely garden. Perfect for families looking for comfort and style in a prime location.',
-      amenities: ['Parking', 'Garden', 'Modern Kitchen', 'Fireplace', 'Balcony', 'Storage'],
-      postedDate: '2 days ago',
-      agentName: 'Sarah Johnson',
-      agentPhone: '+1-555-0123',
-      isVerified: true
-    },
-    {
-      id: '2',
-      images: ['https://images.unsplash.com/photo-1707075108813-edefd7b3308d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aWxsYSUyMHByb3BlcnR5JTIwcmVhbCUyMGVzdGF0ZXxlbnwxfHx8fDE3NTUyODY5NzZ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'],
-      title: 'Luxury Villa with Swimming Pool',
-      price: '$1,250,000',
-      location: 'Long Island, New York',
-      beds: 5,
-      baths: 4,
-      area: '3,800 sq ft',
-      type: 'buy' as const,
-      propertyType: 'Villa',
-      description: 'Stunning luxury villa with premium finishes, spacious living areas, and a beautiful swimming pool. This property offers the ultimate in comfort and elegance.',
-      amenities: ['Swimming Pool', 'Gym', 'Wine Cellar', 'Garage', 'Security System', 'Garden'],
-      postedDate: '1 week ago',
-      agentName: 'Michael Davis',
-      agentPhone: '+1-555-0124',
-      isVerified: true
-    },
-    {
-      id: '3',
-      images: ['https://images.unsplash.com/photo-1656789280583-c5bebda7ca1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHhwZW50aG91c2UlMjBhcGFydG1lbnQlMjBsdXh1cnl8ZW58MXx8fHwxNzU1MzM4Njc3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'],
-      title: 'Penthouse Apartment with City Views',
-      price: '$950,000',
-      location: 'Manhattan, New York',
-      beds: 3,
-      baths: 2,
-      area: '1,800 sq ft',
-      type: 'buy' as const,
-      propertyType: 'Apartment',
-      description: 'Exclusive penthouse apartment offering breathtaking city views, modern amenities, and premium location in the heart of Manhattan.',
-      amenities: ['City Views', 'Concierge', 'Gym', 'Roof Terrace', 'High-end Appliances'],
-      postedDate: '3 days ago',
-      agentName: 'Emily Chen',
-      agentPhone: '+1-555-0125',
-      isVerified: false
-    },
-    {
-      id: '4',
-      images: ['https://images.unsplash.com/photo-1643297551340-19d8ad4f20ad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHhkdXBsZXglMjBob3VzZSUyMG1vZGVybnxlbnwxfHx8fDE3NTUzMzg2Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'],
-      title: 'Contemporary Duplex House',
-      price: '$680,000',
-      location: 'Brooklyn, New York',
-      beds: 3,
-      baths: 2,
-      area: '2,100 sq ft',
-      type: 'buy' as const,
-      propertyType: 'House',
-      description: 'Stylish duplex house with contemporary design, open living spaces, and modern amenities. Great location with easy access to transportation.',
-      amenities: ['Modern Design', 'Open Plan', 'Parking', 'Near Transport'],
-      postedDate: '5 days ago',
-      agentName: 'Robert Wilson',
-      agentPhone: '+1-555-0126',
-      isVerified: true
-    },
-    {
-      id: '5',
-      images: ['https://images.unsplash.com/photo-1560185007-5f0bb1866cab?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b3duaG91c2UlMjBwcm9wZXJ0eXxlbnwxfHx8fDE3NTUzMzg2Nzh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'],
-      title: 'Charming Townhouse',
-      price: '$525,000',
-      location: 'Queens, New York',
-      beds: 3,
-      baths: 2,
-      area: '1,800 sq ft',
-      type: 'buy' as const,
-      propertyType: 'House',
-      description: 'Charming townhouse in a quiet neighborhood, perfect for families. Features include updated kitchen, hardwood floors, and private backyard.',
-      amenities: ['Hardwood Floors', 'Updated Kitchen', 'Backyard', 'Quiet Area'],
-      postedDate: '1 week ago',
-      agentName: 'Lisa Anderson',
-      agentPhone: '+1-555-0127',
-      isVerified: false
-    }
-  ]
+  const handleSearch = async (filters: SearchFilters) => {
+    try {
+      setLoading(true)
+      setIsSearched(true)
+      setError(null)
 
-  const handleSearch = (filters: SearchFilters) => {
-    setLoading(true)
-    setIsSearched(true)
+      const params = new URLSearchParams()
+      params.set('listing', filters.type || 'buy')
+      params.set('limit', '50')
+      if (filters.query) params.set('city', filters.query)
 
-    // Simulate API call delay
-    setTimeout(() => {
-      // Simple filtering logic - in real app this would be done on backend
-      const filtered = mockProperties.filter((property) => {
-        if (filters.type && property.type !== filters.type) return false
-        if (filters.propertyType && filters.propertyType !== 'all' && property.propertyType.toLowerCase() !== filters.propertyType) return false
-        if (filters.rooms && filters.rooms !== 'all') {
-          // Simple room matching - in real app this would be more sophisticated
-          const roomCount = property.beds
-          const filterRoom = filters.rooms
-          if (filterRoom === '1bhk' && roomCount !== 1) return false
-          if (filterRoom === '2bhk' && roomCount !== 2) return false
-          if (filterRoom === '3bhk' && roomCount !== 3) return false
-          if (filterRoom === '4bhk' && roomCount !== 4) return false
-        }
-        if (filters.query && !property.location.toLowerCase().includes(filters.query.toLowerCase()) &&
-          !property.title.toLowerCase().includes(filters.query.toLowerCase())) return false
+      const res = await fetch(`/api/properties?${params.toString()}`, { cache: 'no-store' })
+      const json = await res.json()
+      let items: ApiProperty[] = (json?.data?.properties ?? []) as ApiProperty[]
 
-        // Price filtering (simplified)
-        if (filters.minPrice || filters.maxPrice) {
-          const propertyPrice = parseInt(property.price.replace(/[$,]/g, ''))
-          const minPrice = filters.minPrice ? parseInt(filters.minPrice) : 0
-          const maxPrice = filters.maxPrice ? parseInt(filters.maxPrice) : Infinity
-          if (propertyPrice < minPrice || propertyPrice > maxPrice) return false
-        }
+      // Client-side filtering to match UI controls
+      if (filters.propertyType && filters.propertyType !== 'all') {
+        items = items.filter((p) => (p.type ?? '').toLowerCase() === filters.propertyType)
+      }
+      if (filters.rooms && filters.rooms !== 'all') {
+        const roomsMap: Record<string, number> = { '1bhk': 1, '2bhk': 2, '3bhk': 3, '4bhk': 4 }
+        const need = roomsMap[filters.rooms]
+        items = items.filter((p) => Number(p.rooms ?? 0) === need)
+      }
+      if (filters.minPrice || filters.maxPrice) {
+        const min = filters.minPrice ? Number(filters.minPrice) : 0
+        const max = filters.maxPrice ? Number(filters.maxPrice) : Number.POSITIVE_INFINITY
+        items = items.filter((p) => {
+          const priceNum = Number(p.price ?? 0)
+          return priceNum >= min && priceNum <= max
+        })
+      }
+      if (filters.query) {
+        const q = filters.query.toLowerCase()
+        items = items.filter((p) =>
+          (p.city ?? '').toLowerCase().includes(q) ||
+          (p.address ?? '').toLowerCase().includes(q) ||
+          (p.project ?? '').toLowerCase().includes(q)
+        )
+      }
 
-        return true
-      })
-
-      setSearchResults(filtered)
+      setSearchResults(items.map(mapToDetailItem))
+    } catch {
+      setError('Search failed. Please try again.')
+      setSearchResults([])
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   return (
@@ -228,6 +186,10 @@ export function BuyPage() {
       <AdvancedSearchBar onSearch={handleSearch} defaultType="buy" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {error && (
+          <div className="text-center py-2 text-red-600">{error}</div>
+        )}
+
         {!isSearched && (
           <div className="text-center py-16">
             <h2 className="mb-4 text-4xl font-medium">Find Your Perfect Property</h2>
@@ -236,7 +198,7 @@ export function BuyPage() {
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
-                    {buyProperties.map((property) => (
+                    {initialProperties.map((property) => (
                       <PropertyCard key={property.id} {...property} />
                     ))}
                   </div>
