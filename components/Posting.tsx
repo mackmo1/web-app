@@ -75,6 +75,15 @@ const PostingForm: React.FC<PostingFormProps> = ({ onClose, className }) => {
 
   const { handleSubmit, formState: { errors }, register } = methods;
 
+  type LocalFile = { file: File; url?: string; isPdf: boolean }
+  const [activeTab, setActiveTab] = React.useState<'Inside View'|'Floor Plan'|'Outside View'|'Brochure'>('Inside View')
+  const [insideFiles, setInsideFiles] = React.useState<LocalFile[]>([])
+  const [floorFiles, setFloorFiles] = React.useState<LocalFile[]>([])
+  const [outsideFiles, setOutsideFiles] = React.useState<LocalFile[]>([])
+  const [brochureFiles, setBrochureFiles] = React.useState<LocalFile[]>([])
+  const [uploading, setUploading] = React.useState(false)
+  const createdUrlsRef = React.useRef<Set<string>>(new Set())
+
   const handleClose = () => {
     if (onClose) {
       onClose();
@@ -87,9 +96,82 @@ const PostingForm: React.FC<PostingFormProps> = ({ onClose, className }) => {
     }
   };
 
+  function toLocalFiles(list: FileList, allowPdf: boolean): LocalFile[] {
+    const arr = Array.from(list)
+    return arr
+      .filter(f => {
+        const isImg = f.type.startsWith('image/')
+        const isPdf = f.type === 'application/pdf'
+        return allowPdf ? (isImg || isPdf) : isImg
+      })
+      .map(f => {
+        const isImg = f.type.startsWith('image/')
+        const url = isImg ? URL.createObjectURL(f) : undefined
+        if (url) createdUrlsRef.current.add(url)
+        return { file: f, url, isPdf: f.type === 'application/pdf' }
+      })
+  }
+
+  function handleAddFiles(tab: 'Inside View'|'Floor Plan'|'Outside View'|'Brochure', list: FileList) {
+    const allowPdf = tab === 'Brochure'
+    const newOnes = toLocalFiles(list, allowPdf)
+    if (tab === 'Inside View') setInsideFiles(prev => [...prev, ...newOnes])
+    if (tab === 'Floor Plan') setFloorFiles(prev => [...prev, ...newOnes])
+    if (tab === 'Outside View') setOutsideFiles(prev => [...prev, ...newOnes])
+    if (tab === 'Brochure') setBrochureFiles(prev => [...prev, ...newOnes])
+  }
+
+  function removeFile(tab: 'Inside View'|'Floor Plan'|'Outside View'|'Brochure', idx: number) {
+    const updater = (arr: LocalFile[]) => {
+      const copy = [...arr]
+      const [removed] = copy.splice(idx, 1)
+      if (removed?.url) {
+        URL.revokeObjectURL(removed.url)
+        createdUrlsRef.current.delete(removed.url)
+      }
+      return copy
+    }
+    if (tab === 'Inside View') setInsideFiles(updater)
+    if (tab === 'Floor Plan') setFloorFiles(updater)
+    if (tab === 'Outside View') setOutsideFiles(updater)
+    if (tab === 'Brochure') setBrochureFiles(updater)
+  }
+
+  React.useEffect(() => {
+    const created = createdUrlsRef.current
+    return () => {
+      // cleanup object URLs on unmount
+      created.forEach((u) => URL.revokeObjectURL(u))
+      created.clear()
+    }
+  }, [])
+
+  function buildBatch() {
+    // Flatten order: Inside → Floor → Outside → Brochure
+    const files: File[] = []
+    const categories: string[] = []
+    insideFiles.forEach(f => { files.push(f.file); categories.push('Inside View') })
+    floorFiles.forEach(f => { files.push(f.file); categories.push('Floor Plan') })
+    outsideFiles.forEach(f => { files.push(f.file); categories.push('Outside View') })
+    brochureFiles.forEach(f => { files.push(f.file); categories.push('Brochure') })
+    return { files, categories }
+  }
+
+  async function uploadBatch(propertyId: string) {
+    const { files, categories } = buildBatch()
+    if (!files.length) return { ok: true }
+    const fd = new FormData()
+    files.forEach(f => fd.append('files', f))
+    categories.forEach(c => fd.append('categories', c))
+    const resp = await fetch(`/api/properties/${propertyId}/upload-media-batch`, { method: 'POST', body: fd })
+    const json = await resp.json()
+    if (!resp.ok || json?.ok === false) throw new Error(json?.error || 'Upload failed')
+    return json
+  }
 
   const onSubmit = async (data: PostingFormInputs) => {
     try {
+      setUploading(true)
       const res = await fetch('/api/properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -113,14 +195,26 @@ const PostingForm: React.FC<PostingFormProps> = ({ onClose, className }) => {
         }),
       });
       const json = await res.json();
-      if (!res.ok) {
-        alert(json.error || 'Failed to post property');
+      if (!res.ok || json?.success === false) {
+        alert(json?.error || 'Failed to post property');
         return;
       }
-      alert('Property posted successfully');
+      const propertyId: string = json.data.id
+      try {
+        await uploadBatch(propertyId)
+        alert('Property and media uploaded successfully')
+        // reset local media state
+        setInsideFiles([]); setFloorFiles([]); setOutsideFiles([]); setBrochureFiles([])
+      } catch (err: unknown) {
+        console.error('Media upload error', err)
+        const msg = err instanceof Error ? err.message : 'Unknown error'
+        alert(`Property created, but media upload failed: ${msg}`)
+      }
     } catch (e) {
       console.error('Posting error', e);
       alert('Network error. Please try again.');
+    } finally {
+      setUploading(false)
     }
   };
 
@@ -284,10 +378,69 @@ const PostingForm: React.FC<PostingFormProps> = ({ onClose, className }) => {
                 </div>
               </div>
 
+              {/* Media Uploads */}
+              <div className="mt-6 border rounded-md p-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold">Media uploads</h3>
+                  <span className="text-xs text-gray-500">Accepted: JPG, PNG, WebP (+ PDF for Brochure)</span>
+                </div>
+
+                {/* Tabs */}
+                <div className="mt-3 flex gap-2 flex-wrap">
+                  {(['Inside View','Floor Plan','Outside View','Brochure'] as const).map(tab => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActiveTab(tab)}
+                      className={`${activeTab===tab? 'bg-black text-white' : 'bg-gray-100 text-gray-800'} px-3 py-1.5 rounded-md text-sm`}
+                    >{tab}</button>
+                  ))}
+                </div>
+
+                {/* Uploader */}
+                <div className="mt-4">
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => e.target.files && handleAddFiles(activeTab, e.target.files)}
+                    accept={activeTab === 'Brochure' ? 'image/jpeg,image/png,image/webp,application/pdf' : 'image/jpeg,image/png,image/webp'}
+                    className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-white hover:file:bg-black"
+                    disabled={uploading}
+                  />
+                </div>
+
+                {/* Previews */}
+                <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                  {(activeTab === 'Inside View' ? insideFiles : activeTab === 'Floor Plan' ? floorFiles : activeTab === 'Outside View' ? outsideFiles : brochureFiles).map((lf, idx) => (
+                    <div key={idx} className="relative border rounded overflow-hidden">
+                      <button type="button" aria-label="Remove" onClick={() => removeFile(activeTab, idx)} className="absolute top-1 right-1 bg-white/80 hover:bg-white rounded-full px-1 text-xs">✕</button>
+                      {lf.isPdf ? (
+                        <div className="h-24 flex items-center justify-center text-xs text-gray-600 p-2">
+                          <span className="text-center">PDF\n{lf.file.name}</span>
+                        </div>
+                      ) : (
+                        <img src={lf.url} alt={lf.file.name} className="h-24 w-full object-cover" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Counts */}
+                <div className="mt-2 text-xs text-gray-600">
+                  <span>Inside: {insideFiles.length}</span>
+                  <span className="mx-2">•</span>
+                  <span>Floor: {floorFiles.length}</span>
+                  <span className="mx-2">•</span>
+                  <span>Outside: {outsideFiles.length}</span>
+                  <span className="mx-2">•</span>
+                  <span>Brochure: {brochureFiles.length}</span>
+                </div>
+              </div>
+
               {/* Submit Button */}
               <div className={Styles.buttonGroup}>
                 <div className="mt-[8px]">
-                  <button type="submit" className={Styles.submitButton}>Submit</button>
+                  <button type="submit" className={Styles.submitButton} disabled={uploading}>{uploading ? 'Submitting…' : 'Submit'}</button>
                 </div>
               </div>
             </div>

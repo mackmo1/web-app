@@ -98,7 +98,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
     const publicUrl = getPublicImageUrl(objectPath)
 
-    return NextResponse.json({ ok: true, data: { ...media, path: objectPath, publicUrl } }, { status: 201 })
+    return NextResponse.json({ ok: true, data: { id: media.id.toString(), path: objectPath, isCover: Boolean(media.isCover), order: media.order ?? null, publicUrl } }, { status: 201 })
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Unexpected error'
     return NextResponse.json({ ok: false, error: message }, { status: 500 })
