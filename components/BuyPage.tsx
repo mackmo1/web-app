@@ -71,12 +71,13 @@ export function BuyPage() {
     area?: number | string | null
     message?: string | null
     created_at?: string | null
+    coverImageUrl?: string | null
   }
 
   // Helper to map API property -> CardItem
   const mapToCardItem = useCallback((p: ApiProperty): CardItem => ({
     id: String(p.id),
-    image: '/hero_image_1.jpg',
+    image: p.coverImageUrl || '/hero_image_1.jpg',
     title: p.project ?? '-',
     price: String(p.price ?? ''),
     location: [p.address, p.city].filter(Boolean).join(', '),
@@ -90,7 +91,7 @@ export function BuyPage() {
   // Helper to map API property -> DetailItem
   const mapToDetailItem = (p: ApiProperty): DetailItem => ({
     id: String(p.id),
-    images: ['/hero_image_1.jpg'],
+    images: [p.coverImageUrl || '/hero_image_1.jpg'],
     title: p.project ?? '-',
     price: String(p.price ?? ''),
     location: [p.address, p.city].filter(Boolean).join(', '),

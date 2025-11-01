@@ -61,6 +61,7 @@ export function RentPage() {
     area?: number | string | null
     message?: string | null
     created_at?: string | null
+    coverImageUrl?: string | null
   }
 
   const [initialProperties, setInitialProperties] = useState<CardItem[]>([])
@@ -72,7 +73,7 @@ export function RentPage() {
   // Helper to map API property -> CardItem (grid items)
   const mapToCardItem = useCallback((p: ApiProperty): CardItem => ({
     id: String(p.id),
-    image: '/hero_image_1.jpg',
+    image: p.coverImageUrl || '/hero_image_1.jpg',
     title: p.project ?? '-',
     price: String(p.price ?? ''),
     location: [p.address, p.city].filter(Boolean).join(', '),
@@ -86,7 +87,7 @@ export function RentPage() {
   // Helper to map API property -> RentalPropertyCard item (search results)
   const mapToRentItem = (p: ApiProperty): RentDetailItem => ({
     id: String(p.id),
-    images: ['/hero_image_1.jpg'],
+    images: [p.coverImageUrl || '/hero_image_1.jpg'],
     title: p.project ?? '-',
     monthlyRent: String(p.price ?? ''),
     location: [p.address, p.city].filter(Boolean).join(', '),

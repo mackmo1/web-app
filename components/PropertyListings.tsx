@@ -30,6 +30,7 @@ export function PropertyListings() {
     rooms?: number | string | null
     price?: number | string | null
     area?: number | string | null
+    coverImageUrl?: string | null
   }
 
   const [rentProperties, setRentProperties] = useState<CardItem[]>([])
@@ -38,7 +39,7 @@ export function PropertyListings() {
 
   const mapToCardItem = useCallback((p: ApiProperty): CardItem => ({
     id: String(p.id),
-    image: '/hero_image_1.jpg',
+    image: p.coverImageUrl || '/hero_image_1.jpg',
     title: p.project ?? '-',
     price: String(p.price ?? ''),
     location: [p.address, p.city].filter(Boolean).join(', '),

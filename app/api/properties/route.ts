@@ -1,27 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getPublicImageUrl } from '@/lib/image-url'
+
 
 // Helper: format property to JSON friendly (BigInt -> string, Decimal -> string)
 import type { property as PropertyModel, Prisma } from '@/lib/generated/prisma';
 
 type PropertyEntity = PropertyModel;
 
-type PropertyJson = Omit<PropertyEntity, 'id' | 'user_id' | 'area' | 'price' | 'created_at'> & {
-  id: string | PropertyEntity['id'];
+type PropertyJson = {
+  id: string;
+  listing: string;
+  type: string | null;
+  city: string;
+  project: string | null;
+  address: string;
+  pin_code: string | null;
+  rooms: string;
+  parking: boolean | null;
+  price: string;
+  facing: string | null;
+  starting_dt: string | null;
   user_id: string | null;
   area: string | null;
-  price: string;
+  status: string | null;
+  message: string | null;
+  external_id: string | null;
   created_at: string;
+  coverImageUrl: string;
 };
 
 function formatProperty(p: PropertyEntity): PropertyJson {
   return {
-    ...(p as unknown as Omit<PropertyEntity, 'id' | 'user_id' | 'area' | 'price' | 'created_at'>),
     id: p.id.toString(),
+    listing: p.listing,
+    type: p.type ?? null,
+    city: p.city,
+    project: p.project ?? null,
+    address: p.address,
+    pin_code: p.pin_code ?? null,
+    rooms: p.rooms,
+    parking: p.parking ?? null,
+    price: String(p.price),
+    facing: p.facing ?? null,
+    starting_dt: p.starting_dt ? new Date(p.starting_dt as unknown as Date).toISOString() : null,
     user_id: p.user_id != null ? p.user_id.toString() : null,
     area: p.area != null ? p.area.toString() : null,
-    price: String(p.price),
+    status: p.status ?? null,
+    message: p.message ?? null,
+    external_id: p.external_id ?? null,
     created_at: new Date(p.created_at as unknown as Date).toISOString(),
+    coverImageUrl: getPublicImageUrl(p.coverImagePath ?? undefined),
   };
 }
 
