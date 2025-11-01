@@ -15,9 +15,9 @@ function extFromMime(mime: string): string {
   return 'bin'
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
-    const propertyIdStr = params.id
+    const { id: propertyIdStr } = await ctx.params
     if (!propertyIdStr) {
       return NextResponse.json({ ok: false, error: 'Missing property id' }, { status: 400 })
     }
