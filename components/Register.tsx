@@ -86,7 +86,7 @@ const Register: React.FC<RegisterProps> = ({ onClose, className }) => {
   };
 
   return (
-    <div className={`${Styles.loginContainer} ${className ?? ''} mx-[2em] sm:mx-0`}>
+    <div className={`${Styles.loginContainer} ${className ?? ''} mx-[2em] sm:mx-0 pt-[4em]`}>
 
       <div className={`${Styles.loginContainer_in} relative`}>
         <button
