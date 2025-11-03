@@ -1,10 +1,11 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useForm, FormProvider, Controller, useFormContext } from 'react-hook-form'
 import Styles from './posting.module.css'
 import { X } from 'lucide-react'
 import { Button } from './ui/button'
+import { useSearchParams } from 'next/navigation'
 
 // Property model mapping according to prisma.schema property table
 // id: BigInt (server-side)
@@ -518,7 +519,15 @@ const PostingForm: React.FC<PostingFormProps> = ({ onClose, className }) => {
 export default PostingForm
 
 const ListingSelect = () => {
-  const { control } = useFormContext<PostingFormInputs>()
+  const { control, setValue } = useFormContext<PostingFormInputs>()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const listingType = searchParams.get('listing')
+    if (listingType === 'rent' || listingType === 'sale') {
+      setValue('listing', listingType)
+    }
+  }, [searchParams, setValue])
 
   return (
     <Controller
