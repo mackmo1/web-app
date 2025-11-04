@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -133,8 +134,8 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, className }) => {
 
       const result = await res.json();
       if (!res.ok || !result.success) {
-        console.error('Failed to submit lead:', result.error || res.statusText);
-        alert(result?.error || 'Failed to submit. Please try again.');
+        console.error('Failed to submit lead:', result.error, result.message);
+        alert(result?.message || result?.error || 'Failed to submit. Please try again.');
         return;
       }
 
@@ -181,7 +182,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, className }) => {
               <div className="relative z-1">
                 <label htmlFor="zipCode">Zip Code</label>
                 <input id="zipCode" placeholder="e.g., 10001" className={Styles.inputField}
-                  {...register("zipCode", { pattern: { value: /^[0-9]{5,6}$/, message: "Enter a valid ZIP/Pin" } })} />
+                  {...register("zipCode", { pattern: { value: /^[0-9]{6}$/, message: "Enter a 6-digit PIN" } })} />
               </div>
               <ErrorMessage error={errors.zipCode} />
             </div>
