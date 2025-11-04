@@ -2,7 +2,6 @@
     background: url(../public/bg-icon-1.png) repeat;
     min-height: 100vh;
     box-sizing: border-box;
-    margin-top: 50px;
 }
 .loginContainer_in{
     background: #ffffff;

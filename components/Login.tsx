@@ -75,7 +75,7 @@ const Login: React.FC<LoginProps> = ({ onClose, className }) => {
   };
 
   return (
-    <div className={`${Styles.loginContainer} ${className ?? ''}`}>
+    <div className={`${Styles.loginContainer} ${className ?? ''} mx-[2em] sm:mx-0 pt-[4em]`}>
 
       <div className={`${Styles.loginContainer_in} relative`}>
         <button

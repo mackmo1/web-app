@@ -29,10 +29,10 @@ export default function Navbar() {
           <Link href='/rent' className='text-gray-700 hover:text-blue-600'>
             Rent
           </Link>
-          <Link href='/sell' className='text-gray-700 hover:text-blue-600'>
+          <Link href='/enquery?listing=sale' className='text-gray-700 hover:text-blue-600'>
             Sell
           </Link>
-          <Link href='/rental' className='text-gray-700 hover:text-blue-600'>
+          <Link href='/enquery?listing=rent' className='text-gray-700 hover:text-blue-600'>
             Rental
           </Link>
           <Link href='/contact-us' className='text-gray-700 hover:text-blue-600'>

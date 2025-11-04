@@ -1,29 +1,18 @@
-"use client";
+'use client'
 // Legacy Enquery form has been replaced
-import PostingForm from "@/components/Posting";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import PostingForm from '@/components/Posting'
+import { useRouter } from 'next/navigation'
 
 const EnqueryPage = () => {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
     <>
-      <div className="min-h-screen flex flex-col">
-        <div className="contact-poster">
-          <figure className="poster">
-            <Image
-              src="/contact-poster.jpg"
-              alt="contact poster"
-              width={720}
-              height={580}
-            />
-          </figure>
-          <PostingForm onClose={() => router.back()} />
-        </div>
+      <div className='min-h-screen flex flex-col'>
+        <PostingForm onClose={() => router.back()} />
       </div>
     </>
-  );
-};
+  )
+}
 
-export default EnqueryPage;
+export default EnqueryPage
