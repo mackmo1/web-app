@@ -152,7 +152,7 @@ const Login: React.FC<LoginProps> = ({ onClose, className }) => {
 
               {/* Policy Checkbox */}
               <div className={Styles.buttonGroup}>
-                <div className={Styles.checkBoxGroup}>
+                {/* <div className={Styles.checkBoxGroup}>
                   <input
                     type="checkbox"
                     id="poliyText"
@@ -167,7 +167,7 @@ const Login: React.FC<LoginProps> = ({ onClose, className }) => {
                 </div>
                 {errors.poliyText && (
                   <p className="text-red-500 text-sm mt-1">{errors.poliyText.message}</p>
-                )}
+                )} */}
 
                 {/* Submit Button */}
                 <div className="mt-[20px]">

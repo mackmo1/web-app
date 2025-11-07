@@ -176,7 +176,7 @@ export function RentalPropertyCard({
                   Email
                 </Button>
                 <Button size="sm">
-                  View Details
+                  Show Interest
                 </Button>
               </div>
             </div>

@@ -52,6 +52,7 @@ const EnqueryForm: React.FC<EnqueryFormProps> = ({ onClose, className }) => {
     handleSubmit,
     formState: { errors },
     register,
+    reset,
   } = methods
 
   const handleClose = () => {
@@ -68,6 +69,7 @@ const EnqueryForm: React.FC<EnqueryFormProps> = ({ onClose, className }) => {
 
   const onSubmit = (data: EnquiryFormInputs) => {
     console.log('Form submitted:', data)
+    reset()
   }
 
   return (

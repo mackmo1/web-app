@@ -17,26 +17,19 @@ export function Footer() {
       items: [
         { name: 'About Us', href: '#' },
         { name: 'Our Team', href: '#' },
-        { name: 'Careers', href: '#' },
-        { name: 'Blog', href: '#' },
       ],
     },
     {
       title: 'Support',
       items: [
         { name: 'Contact Us', href: '/contact-us' },
-        { name: 'FAQ', href: '#' },
-        { name: 'Help Center', href: '#' },
-        { name: 'Terms of Service', href: '#' },
       ],
     },
     {
       title: 'Locations',
       items: [
-        { name: 'New York', href: '#' },
-        { name: 'Los Angeles', href: '#' },
-        { name: 'Chicago', href: '#' },
-        { name: 'Miami', href: '#' },
+        { name: 'Bangalore', href: '#' },
+        { name: 'Kolkata', href: '#' },
       ],
     },
   ]

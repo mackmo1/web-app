@@ -235,7 +235,7 @@ const Register: React.FC<RegisterProps> = ({ onClose, className }) => {
               </div>
 
               <div className={Styles.buttonGroup}>
-                <div className={Styles.checkBoxGroup}>
+                {/* <div className={Styles.checkBoxGroup}>
                   <input
                     type="checkbox"
                     id="poliyText"
@@ -250,7 +250,9 @@ const Register: React.FC<RegisterProps> = ({ onClose, className }) => {
                 </div>
                 {errors.poliyText && (
                   <p className="text-red-500 text-sm mt-1">{errors.poliyText.message}</p>
-                )}
+                )} */}
+
+                {/* Submit Button */}
                 <div className="mt-[20px]">
                   <button type="submit" className={Styles.submitButton}>Sign Up</button>
                 </div>

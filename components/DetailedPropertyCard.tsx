@@ -148,7 +148,7 @@ export function DetailedPropertyCard({
                   Email
                 </Button>
                 <Button size="sm">
-                  View Details
+                  Show Interest
                 </Button>
               </div>
             </div>
