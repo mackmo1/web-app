@@ -220,12 +220,12 @@ li:hover .submenu{
   font: 600 26px/ 1.25 'Segoe UI';
 }
 .bannerImage img {
-  height: 480px;
+  height: 400px;
   object-fit: cover;
-  object-position: 100% -30px;
+  object-position: 100% -75px;
 }
 .homeSearch .searchbox{
-  margin-top: -60px;
+  margin-top: -65px;
 }
 
 /* Mobile responsiveness overrides */
