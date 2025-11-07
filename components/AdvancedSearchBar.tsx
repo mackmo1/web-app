@@ -17,11 +17,12 @@ interface SearchFilters {
 interface AdvancedSearchBarProps {
   onSearch: (filters: SearchFilters) => void
   defaultType?: 'buy' | 'rent'
+  query?: string
 }
 
-export function AdvancedSearchBar({ onSearch, defaultType = 'buy' }: AdvancedSearchBarProps) {
+export function AdvancedSearchBar({ onSearch, defaultType = 'buy', query = '' }: AdvancedSearchBarProps) {
   const [filters, setFilters] = useState<SearchFilters>({
-    query: '',
+    query,
     type: defaultType,
     minPrice: '',
     maxPrice: '',

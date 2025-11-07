@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import { useCallback, useEffect, useState } from 'react'
 import { RentSearchBar } from './RentSearchBar'
@@ -6,16 +6,16 @@ import { RentalPropertyCard } from './RentalPropertyCard'
 import { PropertyCard } from './PropertyCard'
 
 interface RentSearchFilters {
-  query: string
-  type: 'buy' | 'rent'
-  minPrice: string
-  maxPrice: string
-  propertyType: string
-  rooms: string
-  furnishing: string
+  query?: string
+  type?: 'buy' | 'rent'
+  minPrice?: string
+  maxPrice?: string
+  propertyType?: string
+  rooms?: string
+  furnishing?: string
 }
 
-export function RentPage() {
+export function RentPage({ query }: { query: string }) {
   // Local shapes used to adapt API data to existing cards without changing UI
   type CardItem = {
     id: string
@@ -71,18 +71,21 @@ export function RentPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Helper to map API property -> CardItem (grid items)
-  const mapToCardItem = useCallback((p: ApiProperty): CardItem => ({
-    id: String(p.id),
-    image: p.coverImageUrl || '/hero_image_1.jpg',
-    title: p.project ?? '-',
-    price: String(p.price ?? ''),
-    location: [p.address, p.city].filter(Boolean).join(', '),
-    beds: Number(p.rooms ?? 0),
-    baths: 0, // UI expects this field; no column yet
-    area: p.area != null ? String(p.area) : '',
-    type: 'rent',
-    propertyType: p.type ?? ''
-  }), [])
+  const mapToCardItem = useCallback(
+    (p: ApiProperty): CardItem => ({
+      id: String(p.id),
+      image: p.coverImageUrl || '/hero_image_1.jpg',
+      title: p.project ?? '-',
+      price: String(p.price ?? ''),
+      location: [p.address, p.city].filter(Boolean).join(', '),
+      beds: Number(p.rooms ?? 0),
+      baths: 0, // UI expects this field; no column yet
+      area: p.area != null ? String(p.area) : '',
+      type: 'rent',
+      propertyType: p.type ?? '',
+    }),
+    []
+  )
 
   // Helper to map API property -> RentalPropertyCard item (search results)
   const mapToRentItem = (p: ApiProperty): RentDetailItem => ({
@@ -126,12 +129,10 @@ export function RentPage() {
       }
     }
     load()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [mapToCardItem])
-
-
-
-
 
   const handleSearch = async (filters: RentSearchFilters) => {
     try {
@@ -167,10 +168,11 @@ export function RentPage() {
       }
       if (filters.query) {
         const q = filters.query.toLowerCase()
-        items = items.filter((p) =>
-          (p.city ?? '').toLowerCase().includes(q) ||
-          (p.address ?? '').toLowerCase().includes(q) ||
-          (p.project ?? '').toLowerCase().includes(q)
+        items = items.filter(
+          (p) =>
+            (p.city ?? '').toLowerCase().includes(q) ||
+            (p.address ?? '').toLowerCase().includes(q) ||
+            (p.project ?? '').toLowerCase().includes(q)
         )
       }
 
@@ -183,23 +185,31 @@ export function RentPage() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <RentSearchBar onSearch={handleSearch} defaultType="rent" />
+  // Initial search if query prop is provided
+  useEffect(() => {
+    if (query && query.trim() !== '') {
+      handleSearch({ query, type: 'rent' })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {error && (
-          <div className="text-center py-2 text-red-600">{error}</div>
-        )}
+  return (
+    <div className='min-h-screen bg-gray-50'>
+      <RentSearchBar onSearch={handleSearch} defaultType='rent' query={query} />
+
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+        {error && <div className='text-center py-2 text-red-600'>{error}</div>}
 
         {!isSearched && (
-          <div className="text-center py-16">
-            <h2 className="mb-4 text-4xl font-medium">Find Your Perfect Rental</h2>
-            <p className="text-muted-foreground">Use our advanced search filters to find properties that match your needs</p>
-            <section className="pt-10 pb-0 bg-gray-50">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className='text-center py-16'>
+            <h2 className='mb-4 text-4xl font-medium'>Find Your Perfect Rental</h2>
+            <p className='text-muted-foreground'>
+              Use our advanced search filters to find properties that match your needs
+            </p>
+            <section className='pt-10 pb-0 bg-gray-50'>
+              <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
                 <div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+                  <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left'>
                     {initialProperties.map((property) => (
                       <PropertyCard key={property.id} {...property} />
                     ))}
@@ -211,17 +221,17 @@ export function RentPage() {
         )}
 
         {loading && (
-          <div className="text-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Searching rental properties...</p>
+          <div className='text-center py-16'>
+            <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto'></div>
+            <p className='mt-4 text-muted-foreground'>Searching rental properties...</p>
           </div>
         )}
 
         {isSearched && !loading && (
           <div>
-            <div className="flex justify-between items-center mb-6">
+            <div className='flex justify-between items-center mb-6'>
               <h2>{searchResults.length} Rental Properties Found</h2>
-              <select className="px-3 py-2 border rounded-md">
+              <select className='px-3 py-2 border rounded-md'>
                 <option>Sort by: Relevance</option>
                 <option>Rent: Low to High</option>
                 <option>Rent: High to Low</option>
@@ -230,16 +240,18 @@ export function RentPage() {
               </select>
             </div>
 
-            <div className="space-y-6">
+            <div className='space-y-6'>
               {searchResults.map((property) => (
                 <RentalPropertyCard key={property.id} {...property} />
               ))}
             </div>
 
             {searchResults.length === 0 && (
-              <div className="text-center py-16">
-                <h3 className="mb-2">No Rental Properties Found</h3>
-                <p className="text-muted-foreground">Try adjusting your search filters to find more rental properties</p>
+              <div className='text-center py-16'>
+                <h3 className='mb-2'>No Rental Properties Found</h3>
+                <p className='text-muted-foreground'>
+                  Try adjusting your search filters to find more rental properties
+                </p>
               </div>
             )}
           </div>

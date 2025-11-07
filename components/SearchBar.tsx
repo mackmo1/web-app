@@ -18,7 +18,7 @@ export function SearchBar() {
             <div className='flex-1 min-w-0'>
               <Input
                 type='text'
-                placeholder='Enter location, property type, or keyword...'
+                placeholder='Enter city, locality, or property name...'
                 className='w-full border-gray-300 focus:border-primary'
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}

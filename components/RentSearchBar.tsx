@@ -6,23 +6,24 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Search, ChevronDown } from "lucide-react"
 
 interface RentSearchFilters {
-  query: string
-  type: 'buy' | 'rent'
-  minPrice: string
-  maxPrice: string
-  propertyType: string
-  rooms: string
-  furnishing: string
+  query?: string
+  type?: 'buy' | 'rent'
+  minPrice?: string
+  maxPrice?: string
+  propertyType?: string
+  rooms?: string
+  furnishing?: string
 }
 
 interface RentSearchBarProps {
   onSearch: (filters: RentSearchFilters) => void
-  defaultType?: 'buy' | 'rent'
+  defaultType?: 'buy' | 'rent',
+  query?: string
 }
 
-export function RentSearchBar({ onSearch, defaultType = 'rent' }: RentSearchBarProps) {
+export function RentSearchBar({ onSearch, defaultType = 'rent', query = ''}: RentSearchBarProps) {
   const [filters, setFilters] = useState<RentSearchFilters>({
-    query: '',
+    query,
     type: defaultType,
     minPrice: '',
     maxPrice: '',
