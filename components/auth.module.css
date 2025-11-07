@@ -90,7 +90,7 @@ textarea.inputField {
     text-align: center;
     display: block;
     padding: 8px 16px;
-    background: #202020;
+    background: #f57f25;
     color: #ffffff;
     border: none;
     outline: none;
@@ -99,10 +99,10 @@ textarea.inputField {
     transition: all 300ms ease-in-out 0ms;
 }
 .submitButton:hover{
-    background: #000000;
+    background: #c96418;
 }
 .buttonGroup a{
-    color: #000000;
+    color: #f57f25;
     font-weight: 500;
     text-decoration: underline;
 }

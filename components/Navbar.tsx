@@ -42,13 +42,13 @@ export default function Navbar() {
 
         <nav className='hidden md:flex space-x-6'>
           <Link href='/projects'>
-            <Button variant='secondary' size='sm' className='cursor-pointer h-11 md:h-8'>
+            <Button variant='outline' size='sm' className='cursor-pointer h-11 md:h-8'>
               Projects
             </Button>
           </Link>
 
           <Link href='/enquery'>
-            <Button variant='secondary' size='sm' className='cursor-pointer'>
+            <Button variant='outline' size='sm' className='cursor-pointer'>
               List property Free
             </Button>
           </Link>
