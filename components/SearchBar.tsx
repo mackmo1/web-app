@@ -15,7 +15,7 @@ export function SearchBar() {
         <div className='searchbox bg-white rounded-lg border border-gray-200 p-6 shadow-sm'>
           <div className='flex flex-col sm:flex-row gap-4 items-center'>
             {/* Search Input */}
-            <div className='flex-1 min-w-0'>
+            <div className='flex-1 min-w-0 w-[100%]'>
               <Input
                 type='text'
                 placeholder='Enter city, locality, or property name...'
@@ -39,7 +39,10 @@ export function SearchBar() {
             </div>
 
             {/* Search Button */}
-            <Link href={searchTerm === 'buy' ? `/buy?query=${searchInput}` : `/rent?query=${searchInput}`}>
+            <Link
+              href={searchTerm === 'buy' ? `/buy?query=${searchInput}` : `/rent?query=${searchInput}`}
+              className='w-full sm:w-auto'
+            >
               <Button className='w-full sm:w-auto px-8 cursor-pointer' size='default'>
                 <Search className='w-4 h-4 mr-2' />
                 Search
