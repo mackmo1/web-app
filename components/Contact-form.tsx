@@ -68,6 +68,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, className }) => {
     formState: { errors },
     register,
     reset,
+    setValue,
   } = methods
 
   const handleClose = () => {
@@ -81,6 +82,26 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, className }) => {
       }
     }
   }
+
+  const [budgetDisplay, setBudgetDisplay] = React.useState('')
+
+  const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '')
+    if (rawValue) {
+      const formatted = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0,
+      }).format(Number(rawValue))
+      setBudgetDisplay(formatted)
+      setValue('budget', rawValue, { shouldValidate: true })
+    } else {
+      setBudgetDisplay('')
+      setValue('budget', '', { shouldValidate: true })
+    }
+  }
+
+
 
   // Correctly typed submit handler
   const onSubmit: SubmitHandler<ContactFormData> = async (data) => {
@@ -133,6 +154,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, className }) => {
     }
 
     reset()
+    setBudgetDisplay('')
   }
 
   return (
@@ -251,8 +273,10 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, className }) => {
                 <input
                   id='budget'
                   className={Styles.inputField}
-                  {...register('budget', { required: 'Select budget' })}
+                  value={budgetDisplay}
+                  onChange={handleBudgetChange}
                 />
+                <input type='hidden' {...register('budget', { required: 'Budget is required' })} />
               </div>
               <ErrorMessage error={errors.budget} />
             </div>
