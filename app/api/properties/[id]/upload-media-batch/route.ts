@@ -8,14 +8,9 @@ export const dynamic = 'force-dynamic'
 
 const BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'property-images'
 
-const CATEGORY_LABELS = [
-  'Inside View',
-  'Floor Plan',
-  'Outside View',
-  'Brochure',
-] as const
+const CATEGORY_LABELS = ['Inside View', 'Floor Plan', 'Outside View', 'Brochure'] as const
 
-type Category = typeof CATEGORY_LABELS[number]
+type Category = (typeof CATEGORY_LABELS)[number]
 
 function isAllowedCategory(value: unknown): value is Category {
   return typeof value === 'string' && CATEGORY_LABELS.includes(value as Category)
@@ -64,7 +59,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     const categoriesRaw = form.getAll('categories')
 
     if (!files.length) {
-      return NextResponse.json({ ok: false, error: 'No files provided (expect repeated field "files")' }, { status: 400 })
+      return NextResponse.json(
+        { ok: false, error: 'No files provided (expect repeated field "files")' },
+        { status: 400 }
+      )
     }
 
     if (categoriesRaw.length !== files.length) {
@@ -94,11 +92,17 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       const mime = it.file.type
       if (it.category === 'Brochure') {
         if (!isPdf(mime) && !isImage(mime)) {
-          return NextResponse.json({ ok: false, error: `Brochure at position ${i} must be image/* or application/pdf` }, { status: 400 })
+          return NextResponse.json(
+            { ok: false, error: `Brochure at position ${i} must be image/* or application/pdf` },
+            { status: 400 }
+          )
         }
       } else {
         if (!isImage(mime)) {
-          return NextResponse.json({ ok: false, error: `${it.category} at position ${i} must be an image` }, { status: 400 })
+          return NextResponse.json(
+            { ok: false, error: `${it.category} at position ${i} must be an image` },
+            { status: 400 }
+          )
         }
       }
     }
@@ -112,7 +116,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     for (const it of ordered) {
       const mime = it.file.type || 'application/octet-stream'
       const ext = extFromMime(mime)
-      const uuid = (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2))
+      const uuid = globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)
       const objectPath = `${propertyIdStr}/${uuid}.${ext}`
 
       // Convert to ArrayBuffer explicitly to avoid Node/Web File quirks in some environments
@@ -120,7 +124,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       try {
         body = await it.file.arrayBuffer()
       } catch (readErr) {
-        return NextResponse.json({ ok: false, error: 'Failed to read uploaded file' }, { status: 400 })
+        return NextResponse.json(
+          { ok: false, error: `Failed to read uploaded file, ${JSON.stringify(readErr)}` },
+          { status: 400 }
+        )
       }
 
       const { error: uploadError } = await supabaseAdmin.storage.from(BUCKET).upload(objectPath, body, {
@@ -147,17 +154,20 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       })
     )
 
-    let created = [] as Awaited<typeof ops[number]>[]
+    let created = [] as Awaited<(typeof ops)[number]>[]
     try {
       created = await prisma.$transaction(ops)
     } catch (_dbErr: unknown) {
       // Roll back uploaded storage objects best-effort
-      const toRemove = uploadResults.map(u => u.path)
+      const toRemove = uploadResults.map((u) => u.path)
       await supabaseAdmin.storage.from(BUCKET).remove(toRemove)
-      return NextResponse.json({ ok: false, error: 'Database error creating media records' }, { status: 500 })
+      return NextResponse.json(
+        { ok: false, error: `Database error creating media records, ${JSON.stringify(_dbErr)}` },
+        { status: 500 }
+      )
     }
 
-    const data = created.map(m => ({
+    const data = created.map((m) => ({
       id: m.id.toString(),
       path: m.path ?? null,
       isCover: Boolean(m.isCover),
@@ -171,4 +181,3 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json({ ok: false, error: message }, { status: 500 })
   }
 }
-

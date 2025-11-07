@@ -4,7 +4,6 @@ import React from 'react';
 import { useForm, FormProvider, Controller, useFormContext } from 'react-hook-form';
 import Styles from "./auth.module.css";
 import Link from 'next/link';
-import Image from 'next/image';
 import { X } from "lucide-react";
 
 type RegisterFormValues = {

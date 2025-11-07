@@ -1,10 +1,12 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useForm, FormProvider, Controller, useFormContext } from 'react-hook-form'
 import Styles from './posting.module.css'
 import { X } from 'lucide-react'
 import { Button } from './ui/button'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 
 // Property model mapping according to prisma.schema property table
 // id: BigInt (server-side)
@@ -48,13 +50,17 @@ export type PostingFormInputs = {
 const ErrorMessage = ({ error }: { error?: { message?: string } }) =>
   error ? <p className='text-red-500 text-sm mt-1'>{error.message}</p> : null
 
-type PostingFormProps = { onClose?: () => void; className?: string }
+type PostingFormProps = { className?: string }
 
-const PostingForm: React.FC<PostingFormProps> = ({ onClose, className }) => {
+const PostingForm: React.FC<PostingFormProps> = ({ className }) => {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const listingType = searchParams.get('listing') || 'rent'
+
   const methods = useForm<PostingFormInputs>({
     mode: 'onTouched',
     defaultValues: {
-      listing: 'rent',
+      listing: listingType,
       type: '',
       city: '',
       project: '',
@@ -91,8 +97,8 @@ const PostingForm: React.FC<PostingFormProps> = ({ onClose, className }) => {
   const createdUrlsRef = React.useRef<Set<string>>(new Set())
 
   const handleClose = () => {
-    if (onClose) {
-      onClose()
+    if (router) {
+      router.back()
     } else if (typeof window !== 'undefined') {
       if (window.history.length > 1) {
         window.history.back()
@@ -262,7 +268,7 @@ const PostingForm: React.FC<PostingFormProps> = ({ onClose, className }) => {
               <div className={Styles.inputGroup}>
                 <div className='relative z-1'>
                   <label htmlFor='listing'>Listing</label>
-                  <ListingSelect />
+                  <ListingSelect listingType={listingType} />
                 </div>
                 <ErrorMessage error={errors.listing} />
               </div>
@@ -485,9 +491,9 @@ const PostingForm: React.FC<PostingFormProps> = ({ onClose, className }) => {
                         <div className='h-24 flex items-center justify-center text-xs text-gray-600 p-2'>
                           <span className='text-center'>PDF\n{lf.file.name}</span>
                         </div>
-                      ) : (
-                        <img src={lf.url} alt={lf.file.name} className='h-24 w-full object-cover' />
-                      )}
+                      ) : lf.url ? (
+                        <Image src={lf.url} alt={lf.file.name} className='h-24 w-full object-cover' />
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -517,11 +523,16 @@ const PostingForm: React.FC<PostingFormProps> = ({ onClose, className }) => {
 
 export default PostingForm
 
-const ListingSelect = () => {
-  const { control } = useFormContext<PostingFormInputs>()
+const ListingSelect = ({ listingType }: { listingType: string }) => {
+  const { control, setValue } = useFormContext<PostingFormInputs>()
+
+  useEffect(() => {
+    if (listingType && setValue) setValue('listing', listingType)
+  }, [listingType, setValue])
 
   return (
     <Controller
+      defaultValue={listingType}
       name='listing'
       control={control}
       rules={{ required: 'Please select listing type' }}
