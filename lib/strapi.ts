@@ -54,7 +54,7 @@ async function strapiFetch<T = unknown>(path: string, init?: RequestInit): Promi
 
   const url = `${base}${path}`;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
+  const timeout = setTimeout(() => controller.abort(), Number(process.env.STRAPI_TIMEOUT_MS || 20000));
   const res = await fetch(url, {
     headers,
     next: { revalidate: 3600 },
@@ -64,16 +64,20 @@ async function strapiFetch<T = unknown>(path: string, init?: RequestInit): Promi
   clearTimeout(timeout);
   if (!res.ok) {
     const text = await res.text();
+    console.error('[Strapi] request failed', {
+      method: init?.method || 'GET',
+      url,
+      status: res.status,
+      statusText: res.statusText,
+      tokenPresent: Boolean(process.env.STRAPI_TOKEN),
+    });
     throw new Error(`Strapi request failed: ${res.status} ${res.statusText} - ${text}`);
   }
   const data = await res.json();
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production' || /^(1|true|yes|debug)$/i.test(String(process.env.STRAPI_LOG || process.env.STRAPI_DEBUG || ''))) {
     try {
       console.log('[Strapi]', (init?.method || 'GET'), url, '->', res.status);
-      console.dir(data, { depth: 4 });
-    } catch {
-      console.log('[Strapi] response JSON', JSON.stringify(data).slice(0, 2000));
-    }
+    } catch {}
   }
   return data;
 }
@@ -146,7 +150,7 @@ export async function getSalePropertyMediaByExternalId(externalId: string): Prom
     .filter((u): u is string => Boolean(u));
   const brochureUrl = pickBestUrl(brochureItem);
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production' || /^(1|true|yes|debug)$/i.test(String(process.env.STRAPI_LOG || process.env.STRAPI_DEBUG || ''))) {
     console.log('[Strapi Media URLs]', { heroUrl, imageUrls, brochureUrl });
   }
 

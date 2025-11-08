@@ -71,8 +71,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   let media = { heroUrl: null as string | null, imageUrls: [] as string[], brochureUrl: null as string | null };
   try {
     media = await getSalePropertyMediaByExternalId(externalId);
-  } catch {
-    // ignore Strapi failures to keep page rendering fast
+  } catch (e) {
+    console.error('[ProjectPage] Strapi media fetch failed', { externalId, error: e instanceof Error ? e.message : String(e) });
   }
   const project = {
     name: row.name || 'Untitled Project',
