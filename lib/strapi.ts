@@ -53,11 +53,15 @@ async function strapiFetch<T = unknown>(path: string, init?: RequestInit): Promi
   if (process.env.STRAPI_TOKEN) headers['Authorization'] = `Bearer ${process.env.STRAPI_TOKEN}`;
 
   const url = `${base}${path}`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2000);
   const res = await fetch(url, {
     headers,
-    cache: 'no-store',
-    ...init,
+    next: { revalidate: 3600 },
+    ...(init || {}),
+    signal: controller.signal,
   });
+  clearTimeout(timeout);
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Strapi request failed: ${res.status} ${res.statusText} - ${text}`);

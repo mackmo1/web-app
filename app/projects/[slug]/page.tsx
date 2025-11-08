@@ -2,9 +2,19 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { getSalePropertyMediaByExternalId } from '@/lib/strapi';
+import { notFound } from 'next/navigation';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
-// Force dynamic rendering to avoid build-time database connection issues
-export const dynamic = 'force-dynamic';
+
+export const runtime = 'nodejs';
+export const preferredRegion = ['arn1'];
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const { data, error } = await supabaseAdmin.from('projects').select('id, external_id');
+  if (error || !data) return [] as { slug: string }[];
+  return data.map((p) => ({ slug: p.external_id || String(p.id) }));
+}
 
 function csvToArray(v?: string | null): string[] {
   return (v || '')
@@ -54,29 +64,35 @@ async function getProjectBySlugOrId(slug: string) {
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const row = await getProjectBySlugOrId(slug);
-  const externalId = row?.external_id || slug;
-  const media = await getSalePropertyMediaByExternalId(externalId);
-  const project = row
-    ? {
-        name: row.name || 'Untitled Project',
-        address: row.address || '',
-        nearby: csvToArray(row.near_by),
-        overview: {
-          area: row.overview_area || '-',
-          floors: row.overview_floors || '-',
-          towers: row.overview_rem1 || '-',
-          units: row.overview_rem2 || '-',
-        },
-        rooms: row.rooms || null,
-        areaSqft: row.area_sqft || null,
-        priceRange: row.price_range || null,
-        googleMapsUrl: row.google_location || null,
-        brochureUrl: media.brochureUrl,
-        usps: csvToArray(row.usp),
-        heroUrl: media.heroUrl,
-        galleryUrls: media.imageUrls,
-      }
-    : null;
+  if (!row) {
+    return notFound();
+  }
+  const externalId = row.external_id || slug;
+  let media = { heroUrl: null as string | null, imageUrls: [] as string[], brochureUrl: null as string | null };
+  try {
+    media = await getSalePropertyMediaByExternalId(externalId);
+  } catch {
+    // ignore Strapi failures to keep page rendering fast
+  }
+  const project = {
+    name: row.name || 'Untitled Project',
+    address: row.address || '',
+    nearby: csvToArray(row.near_by),
+    overview: {
+      area: row.overview_area || '-',
+      floors: row.overview_floors || '-',
+      towers: row.overview_rem1 || '-',
+      units: row.overview_rem2 || '-',
+    },
+    rooms: row.rooms || null,
+    areaSqft: row.area_sqft || null,
+    priceRange: row.price_range || null,
+    googleMapsUrl: row.google_location || null,
+    brochureUrl: media.brochureUrl,
+    usps: csvToArray(row.usp),
+    heroUrl: media.heroUrl,
+    galleryUrls: media.imageUrls,
+  };
 
   if (!project) {
     return (

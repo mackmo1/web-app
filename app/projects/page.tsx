@@ -2,8 +2,10 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 
-// Force dynamic rendering to avoid build-time database connection issues
-export const dynamic = 'force-dynamic';
+// SSG with ISR near the DB region
+export const runtime = 'nodejs';
+export const preferredRegion = ['arn1'];
+export const revalidate = 3600;
 
 function csvToArray(v?: string | null): string[] {
   return (v || '')
