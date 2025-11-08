@@ -92,9 +92,9 @@ export async function getSalePropertyMediaByExternalId(externalId: string): Prom
   const qs = new URLSearchParams();
   qs.set('filters[external_id][$eq]', externalId);
   // Strapi v4: populate media relations safely using 'true' to avoid internal keys like 'related'.
-  qs.append('populate[hero_image]', 'true');
-  qs.append('populate[property_images]', 'true');
-  qs.append('populate[brochure]', 'true');
+  qs.append('populate[hero_image][fields][0]', 'url');
+  qs.append('populate[property_images][fields][0]', 'url');
+  qs.append('populate[brochure][fields][0]', 'url');
 
   const basePath = getCollectionPath();
 
