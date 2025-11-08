@@ -54,7 +54,7 @@ async function strapiFetch<T = unknown>(path: string, init?: RequestInit): Promi
 
   const url = `${base}${path}`;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), Number(process.env.STRAPI_TIMEOUT_MS || 20000));
+  const timeout = setTimeout(() => controller.abort(), Number(process.env.STRAPI_TIMEOUT_MS || 60000));
   const res = await fetch(url, {
     headers,
     next: { revalidate: 3600 },
