@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import { getSalePropertyHeroMapByExternalIds } from '@/lib/strapi';
 
 // SSG with ISR near the DB region
 export const runtime = 'nodejs';
@@ -16,6 +17,8 @@ function csvToArray(v?: string | null): string[] {
 
 export default async function ProjectsListingPage() {
   const rows = await prisma.projects.findMany({ orderBy: { created_at: 'desc' }, take: 24 });
+  const extIds = rows.map((p) => p.external_id).filter((v): v is string => Boolean(v));
+  const heroMap = await getSalePropertyHeroMapByExternalIds(extIds);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:py-10">
@@ -28,11 +31,17 @@ export default async function ProjectsListingPage() {
         {rows.map((p) => {
           const nearby = csvToArray(p.near_by).slice(0, 3);
           const slug = p.external_id || p.id.toString();
+          const heroUrl = (p.external_id ? heroMap[p.external_id] : null) || '/contact-banner.jpg';
           return (
             <article key={p.id.toString()} className="group overflow-hidden rounded-xl border bg-white shadow-sm transition hover:shadow-md">
               {/* Cover */}
               <div className="relative h-44 w-full bg-gray-100 sm:h-48">
-                <div className="flex h-full items-center justify-center text-gray-400">No Image</div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={heroUrl}
+                  alt={p.name || 'Project image'}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
                 {p.overview_area && (
                   <div className="absolute left-3 top-3 rounded bg-black/55 px-2 py-0.5 text-xs text-white">
                     {p.overview_area}

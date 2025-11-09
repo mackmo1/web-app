@@ -157,3 +157,46 @@ export async function getSalePropertyMediaByExternalId(externalId: string): Prom
   return { heroUrl, imageUrls, brochureUrl };
 }
 
+
+
+// Bulk fetch: map external_id -> hero image URL (or null)
+export async function getSalePropertyHeroMapByExternalIds(externalIds: string[]): Promise<Record<string, string | null>> {
+  const result: Record<string, string | null> = {};
+  const ids = Array.from(new Set(externalIds.filter(Boolean)));
+  if (ids.length === 0) return result;
+
+  const qs = new URLSearchParams();
+  for (const id of ids) qs.append('filters[external_id][$in]', id);
+  qs.append('populate[hero_image][fields][0]', 'url');
+  qs.append('pagination[pageSize]', '100');
+
+  const basePath = getCollectionPath();
+
+  interface StrapiMediaFile { url?: string; formats?: Record<string, { url: string }>; }
+  interface Entity { external_id?: string; hero_image?: StrapiMediaFile | StrapiMediaFile[] }
+
+  try {
+    const resp = await strapiFetch<StrapiResponse<Entity[]>>(`${basePath}?${qs.toString()}`);
+    const items = Array.isArray(resp.data) ? resp.data : [];
+
+    const pick = (file?: StrapiMediaFile): string | null => {
+      if (!file) return null;
+      const candidate = file.url || file.formats?.large?.url || file.formats?.medium?.url || file.formats?.small?.url || file.formats?.thumbnail?.url;
+      return candidate ? absoluteUrl(candidate) : null;
+    };
+
+    for (const item of items) {
+      const key = item.external_id || '';
+      if (!key) continue;
+      const hero = Array.isArray(item.hero_image) ? item.hero_image[0] : item.hero_image;
+      result[key] = pick(hero);
+    }
+  } catch (e) {
+    console.error('[Strapi] bulk hero fetch failed', {
+      count: ids.length,
+      error: e instanceof Error ? e.message : String(e),
+    });
+  }
+
+  return result;
+}
