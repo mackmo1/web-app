@@ -5,6 +5,8 @@ import { getSalePropertyMediaByExternalId } from '@/lib/strapi';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
+import type { Prisma } from '@/lib/generated/prisma';
+
 
 export const runtime = 'nodejs';
 export const preferredRegion = ['arn1'];
@@ -45,6 +47,10 @@ function toEmbedUrl(url?: string | null): string | null {
   return url;
 }
 
+// Pricing tiers type used for rendering multiple tiers
+type PricingTier = { rooms: string; area_sqft: string; price_range: string };
+
+
 
 async function getProjectBySlugOrId(slug: string) {
   // If slug is numeric, treat as ID
@@ -74,6 +80,31 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   } catch (e) {
     console.error('[ProjectPage] Strapi media fetch failed', { externalId, error: e instanceof Error ? e.message : String(e) });
   }
+
+  // Normalize pricing tiers with backward compatibility
+  const rawValue: unknown = (row as { pricing_tiers?: unknown }).pricing_tiers ?? null;
+  const rawArray: Prisma.JsonArray = Array.isArray(rawValue) ? (rawValue as Prisma.JsonArray) : [];
+  const jsonTiers: PricingTier[] = rawArray
+    .map((t) => {
+      const obj = t && typeof t === 'object' && !Array.isArray(t) ? (t as Record<string, unknown>) : {};
+      const rooms = typeof obj['rooms'] === 'string' && (obj['rooms'] as string).trim() ? (obj['rooms'] as string) : '';
+      const area_sqft = typeof obj['area_sqft'] === 'string' && (obj['area_sqft'] as string).trim() ? (obj['area_sqft'] as string) : '';
+      const price_range = typeof obj['price_range'] === 'string' && (obj['price_range'] as string).trim() ? (obj['price_range'] as string) : '';
+      return { rooms, area_sqft, price_range };
+    })
+    .filter((t) => t.rooms || t.area_sqft || t.price_range)
+    .map((t) => ({
+      rooms: t.rooms || 'TBA',
+      area_sqft: t.area_sqft || 'TBA',
+      price_range: t.price_range || 'TBA',
+    }));
+
+  const tiers: PricingTier[] = jsonTiers.length > 0
+    ? jsonTiers
+    : ((row.rooms || row.area_sqft || row.price_range)
+        ? [{ rooms: row.rooms || 'TBA', area_sqft: row.area_sqft || 'TBA', price_range: row.price_range || 'TBA' }]
+        : []);
+
   const project = {
     name: row.name || 'Untitled Project',
     address: row.address || '',
@@ -84,14 +115,12 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       towers: row.overview_rem1 || '-',
       units: row.overview_rem2 || '-',
     },
-    rooms: row.rooms || null,
-    areaSqft: row.area_sqft || null,
-    priceRange: row.price_range || null,
     googleMapsUrl: row.google_location || null,
     brochureUrl: media.brochureUrl,
     usps: csvToArray(row.usp),
     heroUrl: media.heroUrl,
     galleryUrls: media.imageUrls,
+    pricingTiers: tiers,
   };
 
   if (!project) {
@@ -180,20 +209,28 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           {/* Pricing */}
           <section className="rounded-xl border bg-white p-5 shadow-sm">
             <h2 className="text-lg font-semibold">Pricing</h2>
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="rounded-lg bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">Rooms (BHK)</div>
-                <div className="mt-1 text-sm font-medium">{project.rooms || 'TBA'}</div>
+            {project.pricingTiers && project.pricingTiers.length > 0 ? (
+              <div className="mt-4 space-y-3">
+                {project.pricingTiers.map((t, i) => (
+                  <div key={i} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div className="rounded-lg bg-gray-50 p-4">
+                      <div className="text-xs text-gray-500">Rooms (BHK)</div>
+                      <div className="mt-1 text-sm font-medium">{t.rooms || 'TBA'}</div>
+                    </div>
+                    <div className="rounded-lg bg-gray-50 p-4">
+                      <div className="text-xs text-gray-500">Area (sq ft)</div>
+                      <div className="mt-1 text-sm font-medium">{t.area_sqft || 'TBA'}</div>
+                    </div>
+                    <div className="rounded-lg bg-gray-50 p-4">
+                      <div className="text-xs text-gray-500">Price Range</div>
+                      <div className="mt-1 text-sm font-medium">{t.price_range || 'TBA'}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="rounded-lg bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">Area (sq ft)</div>
-                <div className="mt-1 text-sm font-medium">{project.areaSqft || 'TBA'}</div>
-              </div>
-              <div className="rounded-lg bg-gray-50 p-4">
-                <div className="text-xs text-gray-500">Price Range</div>
-                <div className="mt-1 text-sm font-medium">{project.priceRange || 'TBA'}</div>
-              </div>
-            </div>
+            ) : (
+              <p className="mt-3 text-sm text-gray-600">Pricing to be announced</p>
+            )}
           </section>
 
           {/* Gallery (from Strapi) */}
