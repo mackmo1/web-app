@@ -4,10 +4,12 @@ import { ImageWithFallback } from './figma/ImageWithFallback'
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { Button } from './ui/button'
+import { useAuth } from './AuthProvider'
 
 export default function MobileDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const drawerRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
+  const { authenticated, user, loading, refreshAuth } = useAuth()
 
   // Close drawer when route changes
   useEffect(() => {
@@ -33,6 +35,16 @@ export default function MobileDrawer({ isOpen, onClose }: { isOpen: boolean; onC
     }
   }, [isOpen, onClose])
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      await refreshAuth()
+      onClose()
+    } catch (error) {
+      console.error('Logout failed', error)
+    }
+  }
+
   return (
     <div
       ref={drawerRef}
@@ -55,15 +67,33 @@ export default function MobileDrawer({ isOpen, onClose }: { isOpen: boolean; onC
         </button>
       </div>
       <nav className='flex flex-col p-4 space-y-4'>
-        <Link href='/login' className='cursor-pointer'>
-          <Button variant='outline' size='sm'>
-            Login
-          </Button>
-        </Link>
+        {authenticated ? (
+          <>
+            <span className='text-sm text-gray-700'>
+              {user?.name || user?.email}
+            </span>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={handleLogout}
+              disabled={loading}
+            >
+              Logout
+            </Button>
+          </>
+        ) : (
+          <>
+            <Link href='/login' className='cursor-pointer'>
+              <Button variant='outline' size='sm'>
+                Login
+              </Button>
+            </Link>
 
-        <Link href='/register' className='cursor-pointer'>
-          <Button size='sm'>Register</Button>
-        </Link>
+            <Link href='/register' className='cursor-pointer'>
+              <Button size='sm'>Register</Button>
+            </Link>
+          </>
+        )}
 
         <Link href='/projects'>
           <Button variant='secondary' size='sm' className='cursor-pointer h-11 md:h-8'>

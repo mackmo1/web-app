@@ -6,6 +6,7 @@ import Styles from "./auth.module.css";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { X } from "lucide-react";
+import { useAuth } from './AuthProvider';
 
 
 // ✅ Define a proper type for form inputs
@@ -35,8 +36,8 @@ const Login: React.FC<LoginProps> = ({ onClose, className }) => {
     register,
   } = methods;
 
-  // ✅ Use typed form data
   const router = useRouter();
+  const { refreshAuth } = useAuth();
 
   const handleClose = () => {
     if (onClose) {
@@ -67,7 +68,15 @@ const Login: React.FC<LoginProps> = ({ onClose, className }) => {
       }
 
       alert('Login successful');
-      router.push('/');
+
+      // Refresh auth state so header/navigation updates immediately
+      await refreshAuth();
+
+      if (onClose) {
+        onClose();
+      } else {
+        router.push('/');
+      }
     } catch (err) {
       console.error('Login error:', err);
       alert('Network error. Please try again.');
