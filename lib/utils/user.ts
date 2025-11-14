@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+import { promisify } from 'util';
 import { User, UserResponse } from '../types/user';
 
 // Convert Prisma user to API response format
@@ -29,12 +31,42 @@ export function isValidMobile(mobile: string): boolean {
   return mobileRegex.test(mobile);
 }
 
-// Hash password (you should use bcrypt in production)
+// Hash password using Node's built-in scrypt algorithm
+// This avoids adding external dependencies while providing strong hashing.
+// Format: "scrypt$<salt>$<hash>"
+
+const scryptAsync = promisify(crypto.scrypt);
+
 export async function hashPassword(password: string): Promise<string> {
-  // For now, returning as-is. In production, use bcrypt:
-  // const bcrypt = require('bcrypt');
-  // return await bcrypt.hash(password, 10);
-  return password;
+  const salt = crypto.randomBytes(16).toString('hex');
+  const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
+  const hash = derivedKey.toString('hex');
+  return `scrypt$${salt}$${hash}`;
+}
+
+// Verify password against a stored hash. Supports both scrypt hashes and
+// legacy plain-text passwords for backward compatibility.
+export async function verifyPassword(
+  password: string,
+  storedHash: string,
+): Promise<boolean> {
+  // New format using scrypt
+  if (storedHash.startsWith('scrypt$')) {
+    const [, salt, hash] = storedHash.split('$');
+    if (!salt || !hash) return false;
+
+    const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
+    const computedHash = derivedKey.toString('hex');
+
+    const hashBuffer = Buffer.from(hash, 'hex');
+    const computedBuffer = Buffer.from(computedHash, 'hex');
+
+    if (hashBuffer.length !== computedBuffer.length) return false;
+    return crypto.timingSafeEqual(hashBuffer, computedBuffer);
+  }
+
+  // Fallback for legacy plain-text passwords (will be migrated on next login)
+  return storedHash === password;
 }
 
 // Validate user type
