@@ -117,6 +117,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
     },
     googleMapsUrl: row.google_location || null,
     brochureUrl: media.brochureUrl,
+    brochureDownloadUrl: `/api/projects/${encodeURIComponent(slug)}/brochure-download`,
     usps: csvToArray(row.usp),
     heroUrl: media.heroUrl,
     galleryUrls: media.imageUrls,
@@ -303,9 +304,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
             <div className="mt-4">
               {project.brochureUrl ? (
                 <a
-                  href={project.brochureUrl}
-                  target="_blank"
-                  rel="noreferrer"
+                  href={project.brochureDownloadUrl}
                   className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
                 >
                   Download Brochure
