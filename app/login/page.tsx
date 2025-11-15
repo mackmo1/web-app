@@ -1,8 +1,10 @@
 "use client";
+
+import { Suspense } from "react";
 import Login from "@/components/Login";
 import { useRouter, useSearchParams } from "next/navigation";
 
-const LoginPage = () => {
+function LoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect");
@@ -16,11 +18,17 @@ const LoginPage = () => {
   };
 
   return (
-    <>
-      <div className="min-h-screen flex flex-col">
-        <Login onClose={handleClose} />
-      </div>
-    </>
+    <div className="min-h-screen flex flex-col">
+      <Login onClose={handleClose} />
+    </div>
+  );
+}
+
+const LoginPage = () => {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
   );
 };
 
