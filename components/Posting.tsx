@@ -94,6 +94,8 @@ const PostingForm: React.FC<PostingFormProps> = ({ className }) => {
   const [outsideFiles, setOutsideFiles] = React.useState<LocalFile[]>([])
   const [brochureFiles, setBrochureFiles] = React.useState<LocalFile[]>([])
   const [uploading, setUploading] = React.useState(false)
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
   const createdUrlsRef = React.useRef<Set<string>>(new Set())
 
   const handleClose = () => {
@@ -181,65 +183,96 @@ const PostingForm: React.FC<PostingFormProps> = ({ className }) => {
     return { files, categories }
   }
 
-  async function uploadBatch(propertyId: string) {
-    const { files, categories } = buildBatch()
-    if (!files.length) return { ok: true }
-    const fd = new FormData()
-    files.forEach((f) => fd.append('files', f))
-    categories.forEach((c) => fd.append('categories', c))
-    const resp = await fetch(`/api/properties/${propertyId}/upload-media-batch`, { method: 'POST', body: fd })
-    const json = await resp.json()
-    if (!resp.ok || json?.ok === false) throw new Error(json?.error || 'Upload failed')
-    return json
-  }
-
   const onSubmit = async (data: PostingFormInputs) => {
+    setErrorMessage(null)
+    setSuccessMessage(null)
+
     try {
       setUploading(true)
-      const res = await fetch('/api/properties', {
+
+      const formData = new FormData()
+      formData.append('listing', data.listing)
+      formData.append('city', data.city)
+      formData.append('address', data.address)
+      formData.append('rooms', data.rooms)
+      formData.append('price', data.price)
+
+      if (data.type) formData.append('type', data.type)
+      if (data.project) formData.append('project', data.project)
+      if (data.pin_code) formData.append('pin_code', data.pin_code)
+      if (data.parking) formData.append('parking', data.parking)
+      if (data.facing) formData.append('facing', data.facing)
+      if (data.starting_dt) formData.append('starting_dt', data.starting_dt)
+      if (data.user_id) formData.append('user_id', data.user_id)
+      if (data.area) formData.append('area', data.area)
+      if (data.status) formData.append('status', data.status)
+      if (data.message) formData.append('message', data.message)
+      if (data.external_id) formData.append('external_id', data.external_id)
+
+      const { files, categories } = buildBatch()
+      files.forEach((file) => formData.append('files', file))
+      categories.forEach((cat) => formData.append('categories', cat))
+
+      const res = await fetch('/api/properties/post-with-media', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          listing: data.listing,
-          type: data.type || null,
-          city: data.city,
-          project: data.project || null,
-          address: data.address,
-          pin_code: data.pin_code || null,
-          rooms: data.rooms,
-          parking: data.parking === 'yes' ? true : data.parking === 'no' ? false : null,
-          price: data.price,
-          facing: data.facing || null,
-          starting_dt: data.starting_dt || null,
-          user_id: data.user_id ? Number(data.user_id) : null,
-          area: data.area ? Number(data.area) : null,
-          status: data.status || null,
-          message: data.message || null,
-          external_id: data.external_id || null,
-        }),
+        body: formData,
       })
+
       const json = await res.json()
+
       if (!res.ok || json?.success === false) {
-        alert(json?.error || 'Failed to post property')
+        const code = json?.code as string | undefined
+        const serverMessage: string | undefined =
+          typeof json?.message === 'string' ? json.message : json?.error
+
+        let friendly = serverMessage
+
+        switch (code) {
+          case 'FILE_TOO_LARGE':
+            friendly =
+              friendly ||
+              'Image upload failed: File size exceeds the allowed limit. Please choose a smaller image.'
+            break
+          case 'INVALID_FILE_TYPE':
+            friendly =
+              friendly ||
+              'Image upload failed: Unsupported file format. Please upload JPG, PNG, WebP, or PDF for brochures.'
+            break
+          case 'NETWORK_ERROR':
+            friendly =
+              friendly ||
+              'Network error while uploading images. Please check your internet connection and try again.'
+            break
+          case 'DB_ERROR':
+            friendly = friendly || 'Server error while saving your property. Please try again.'
+            break
+          case 'VALIDATION_ERROR':
+            friendly =
+              friendly ||
+              'There was a problem with your submission. Please check the form and try again.'
+            break
+          default:
+            friendly = friendly || 'Failed to post property. Please try again.'
+        }
+
+        setErrorMessage(friendly)
+        setSuccessMessage(null)
         return
       }
-      const propertyId: string = json.data.id
-      try {
-        await uploadBatch(propertyId)
-        alert('Property and media uploaded successfully')
-        // reset local media state
-        setInsideFiles([])
-        setFloorFiles([])
-        setOutsideFiles([])
-        setBrochureFiles([])
-      } catch (err: unknown) {
-        console.error('Media upload error', err)
-        const msg = err instanceof Error ? err.message : 'Unknown error'
-        alert(`Property created, but media upload failed: ${msg}`)
-      }
+
+      setErrorMessage(null)
+      setSuccessMessage(json?.message || 'Property submitted successfully.')
+
+      methods.reset()
+      setInsideFiles([])
+      setFloorFiles([])
+      setOutsideFiles([])
+      setBrochureFiles([])
+      setActiveTab('Inside View')
     } catch (e) {
       console.error('Posting error', e)
-      alert('Network error. Please try again.')
+      setErrorMessage('Network error. Please check your internet connection and try again.')
+      setSuccessMessage(null)
     } finally {
       setUploading(false)
     }
@@ -260,6 +293,17 @@ const PostingForm: React.FC<PostingFormProps> = ({ className }) => {
         <div className={Styles.login_heading}>
           <span>Post Property</span>
         </div>
+
+        {errorMessage && (
+          <div className='mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700'>
+            {errorMessage}
+          </div>
+        )}
+        {successMessage && (
+          <div className='mb-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700'>
+            {successMessage}
+          </div>
+        )}
 
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -492,7 +536,13 @@ const PostingForm: React.FC<PostingFormProps> = ({ className }) => {
                           <span className='text-center'>PDF\n{lf.file.name}</span>
                         </div>
                       ) : lf.url ? (
-                        <Image src={lf.url} alt={lf.file.name} className='h-24 w-full object-cover' />
+                        <Image
+                          src={lf.url}
+                          alt={lf.file.name}
+                          width={300}
+                          height={150}
+                          className='h-24 w-full object-cover'
+                        />
                       ) : null}
                     </div>
                   ))}
