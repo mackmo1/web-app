@@ -1,9 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { RentSearchBar } from './RentSearchBar'
 import { RentalPropertyCard } from './RentalPropertyCard'
 import { PropertyCard } from './PropertyCard'
+import { buildContactUrl, PropertyContext } from '@/lib/property-funnel'
+import { useFavorites } from '@/hooks/useFavorites'
 
 interface RentSearchFilters {
   query?: string
@@ -70,6 +73,9 @@ export function RentPage({ query }: { query: string }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const router = useRouter()
+  const { toggleFavorite, isFavorite } = useFavorites()
+
   // Helper to map API property -> CardItem (grid items)
   const mapToCardItem = useCallback(
     (p: ApiProperty): CardItem => ({
@@ -133,6 +139,20 @@ export function RentPage({ query }: { query: string }) {
       cancelled = true
     }
   }, [mapToCardItem])
+
+  const handleShowInterest = (property: RentDetailItem) => {
+    const context: PropertyContext = {
+      id: property.id,
+      title: property.title,
+      location: property.location,
+      price: property.monthlyRent,
+      listingType: 'rent',
+      propertyType: property.propertyType,
+    }
+
+    const url = buildContactUrl(context, 'property_interest')
+    router.push(url)
+  }
 
   const handleSearch = async (filters: RentSearchFilters) => {
     try {
@@ -242,7 +262,13 @@ export function RentPage({ query }: { query: string }) {
 
             <div className='space-y-6'>
               {searchResults.map((property) => (
-                <RentalPropertyCard key={property.id} {...property} />
+                <RentalPropertyCard
+                  key={property.id}
+                  {...property}
+                  onShowInterest={() => handleShowInterest(property)}
+                  onToggleFavorite={() => toggleFavorite(property.id)}
+                  isFavorite={isFavorite(property.id)}
+                />
               ))}
             </div>
 

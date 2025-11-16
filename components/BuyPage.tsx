@@ -1,9 +1,12 @@
 'use client'
 
-import { use, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { AdvancedSearchBar } from './AdvancedSearchBar'
 import { DetailedPropertyCard } from './DetailedPropertyCard'
 import { PropertyCard } from './PropertyCard'
+import { buildContactUrl, PropertyContext } from '@/lib/property-funnel'
+import { useFavorites } from '@/hooks/useFavorites'
 
 interface SearchFilters {
   query?: string
@@ -52,6 +55,9 @@ export function BuyPage({ query }: { query: string }) {
   const [isSearched, setIsSearched] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const router = useRouter()
+  const { toggleFavorite, isFavorite } = useFavorites()
 
   // Define API response type we expect from /api/properties
   type ApiProperty = {
@@ -126,11 +132,26 @@ export function BuyPage({ query }: { query: string }) {
         if (!cancelled) setError('Failed to load properties')
       }
     }
+
     load()
     return () => {
       cancelled = true
     }
   }, [mapToCardItem])
+
+  const handleShowInterest = (property: DetailItem) => {
+    const context: PropertyContext = {
+      id: property.id,
+      title: property.title,
+      location: property.location,
+      price: property.price,
+      listingType: 'buy',
+      propertyType: property.propertyType,
+    }
+
+    const url = buildContactUrl(context, 'property_interest')
+    router.push(url)
+  }
 
   const handleSearch = async (filters: SearchFilters) => {
     try {
@@ -239,7 +260,13 @@ export function BuyPage({ query }: { query: string }) {
 
             <div className='space-y-6'>
               {searchResults.map((property) => (
-                <DetailedPropertyCard key={property.id} {...property} />
+                <DetailedPropertyCard
+                  key={property.id}
+                  {...property}
+                  onShowInterest={() => handleShowInterest(property)}
+                  onToggleFavorite={() => toggleFavorite(property.id)}
+                  isFavorite={isFavorite(property.id)}
+                />
               ))}
             </div>
 

@@ -22,6 +22,9 @@ interface RentalPropertyCardProps {
   // agentPhone: string
   isVerified?: boolean
   securityDeposit?: string
+  onShowInterest?: () => void
+  onToggleFavorite?: () => void
+  isFavorite?: boolean
 }
 
 export function RentalPropertyCard({
@@ -40,7 +43,10 @@ export function RentalPropertyCard({
   agentName,
   // agentPhone,
   isVerified = false,
-  securityDeposit
+  securityDeposit,
+  onShowInterest,
+  onToggleFavorite,
+  isFavorite = false,
 }: RentalPropertyCardProps) {
   const getFurnishingLabel = (furnishing: string) => {
     switch (furnishing) {
@@ -84,8 +90,12 @@ export function RentalPropertyCard({
               size="icon"
               variant="ghost"
               className="absolute bottom-3 right-3 bg-white/80 hover:bg-white"
+              onClick={onToggleFavorite}
+              type="button"
             >
-              <Heart className="w-4 h-4" />
+              <Heart
+                className={`w-4 h-4 ${isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-700'}`}
+              />
             </Button>
           </div>
           
@@ -175,7 +185,7 @@ export function RentalPropertyCard({
                   <Mail className="w-4 h-4 mr-2" />
                   Email
                 </Button>
-                <Button size="sm">
+                <Button size="sm" onClick={onShowInterest} type="button">
                   Show Interest
                 </Button>
               </div>

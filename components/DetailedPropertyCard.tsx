@@ -21,6 +21,9 @@ interface DetailedPropertyCardProps {
   agentName: string
   // agentPhone: string
   isVerified?: boolean
+  onShowInterest?: () => void
+  onToggleFavorite?: () => void
+  isFavorite?: boolean
 }
 
 export function DetailedPropertyCard({
@@ -38,7 +41,10 @@ export function DetailedPropertyCard({
   postedDate,
   agentName,
   // agentPhone,
-  isVerified = false
+  isVerified = false,
+  onShowInterest,
+  onToggleFavorite,
+  isFavorite = false,
 }: DetailedPropertyCardProps) {
   return (
     <Card className="group cursor-pointer hover:shadow-lg transition-shadow duration-300">
@@ -67,8 +73,12 @@ export function DetailedPropertyCard({
               size="icon"
               variant="ghost"
               className="absolute bottom-3 right-3 bg-white/80 hover:bg-white"
+              onClick={onToggleFavorite}
+              type="button"
             >
-              <Heart className="w-4 h-4" />
+              <Heart
+                className={`w-4 h-4 ${isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-700'}`}
+              />
             </Button>
           </div>
           
@@ -147,7 +157,7 @@ export function DetailedPropertyCard({
                   <Mail className="w-4 h-4 mr-2" />
                   Email
                 </Button>
-                <Button size="sm">
+                <Button size="sm" onClick={onShowInterest} type="button">
                   Show Interest
                 </Button>
               </div>

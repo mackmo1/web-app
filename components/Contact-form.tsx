@@ -1,6 +1,8 @@
 'use client'
 
-import React from 'react'
+import React, { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+
 import { useForm, FormProvider, SubmitHandler } from 'react-hook-form'
 import Styles from './contact.module.css'
 import { X } from 'lucide-react'
@@ -45,7 +47,7 @@ const ErrorMessage = ({ error }: { error?: { message?: string } }) =>
 
 type ContactFormProps = { onClose?: () => void; className?: string }
 
-const ContactForm: React.FC<ContactFormProps> = ({ onClose, className }) => {
+const ContactFormInner: React.FC<ContactFormProps> = ({ onClose, className }) => {
   const methods = useForm<ContactFormData>({
     mode: 'onTouched',
     defaultValues: {
@@ -70,6 +72,45 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, className }) => {
     reset,
     setValue,
   } = methods
+
+  const searchParams = useSearchParams()
+
+  React.useEffect(() => {
+    if (!searchParams) return
+
+    const listingType = searchParams.get('listingType')
+    const location = searchParams.get('location')
+    const title = searchParams.get('title')
+    const propertyId = searchParams.get('propertyId')
+    const inquiryType = searchParams.get('inquiryType')
+    const price = searchParams.get('price')
+    const propertyType = searchParams.get('propertyType')
+
+    if (listingType === 'buy' || listingType === 'rent') {
+      setValue('wantTo', listingType, { shouldValidate: true })
+    }
+
+    if (location) {
+      setValue('city', location, { shouldValidate: true })
+    }
+
+    const details: string[] = []
+    if (title) details.push(`Property: ${title}`)
+    if (location) details.push(`Location: ${location}`)
+    if (price) details.push(`Price: ${price}`)
+    if (propertyType) details.push(`Type: ${propertyType}`)
+    if (propertyId) details.push(`ID: ${propertyId}`)
+
+    const intro =
+      inquiryType === 'favorite_property'
+        ? "I'm interested in this property I favorited."
+        : "I'm interested in this property."
+
+    if (details.length > 0) {
+      const message = `${intro}\n\n${details.join(' | ')}`
+      setValue('message', message, { shouldValidate: true })
+    }
+  }, [searchParams, setValue])
 
   const handleClose = () => {
     if (onClose) {
@@ -184,7 +225,6 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, className }) => {
                   placeholder='e.g., New York'
                   className={Styles.inputField}
                   {...register('city', { required: 'City is required' })}
-                  value='Bangalore'
                 />
               </div>
               <ErrorMessage error={errors.city} />
@@ -372,5 +412,12 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, className }) => {
     </div>
   )
 }
+
+const ContactForm: React.FC<ContactFormProps> = (props) => (
+  <Suspense fallback={null}>
+    <ContactFormInner {...props} />
+  </Suspense>
+)
+
 
 export default ContactForm
