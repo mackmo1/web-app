@@ -70,35 +70,6 @@ export async function PUT(
       return createNotFoundResponse('Lead');
     }
 
-    // Check for duplicate email/phone (excluding current lead)
-    if (body.email_id || body.phone) {
-      const duplicateConditions = [];
-      
-      if (body.email_id) {
-        duplicateConditions.push({ email_id: body.email_id });
-      }
-      
-      if (body.phone) {
-        duplicateConditions.push({ phone: body.phone });
-      }
-
-      const duplicateLead = await prisma.lead.findFirst({
-        where: {
-          AND: [
-            { id: { not: leadId } },
-            { OR: duplicateConditions }
-          ]
-        }
-      });
-
-      if (duplicateLead) {
-        return NextResponse.json<LeadApiResponse<null>>({
-          success: false,
-          error: 'A lead with this email or phone number already exists'
-        }, { status: 409 });
-      }
-    }
-
     // Prepare update data (only include defined fields)
     const updateData: Prisma.LeadUpdateInput = {};
 

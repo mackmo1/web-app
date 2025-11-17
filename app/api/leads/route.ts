@@ -99,23 +99,6 @@ export async function POST(request: NextRequest) {
       return createValidationErrorResponse(validation.errors);
     }
 
-    // Check for duplicate leads (same email and phone)
-    const existingLead = await prisma.lead.findFirst({
-      where: {
-        OR: [
-          { email_id: body.email_id },
-          { phone: body.phone }
-        ]
-      }
-    });
-
-    if (existingLead) {
-      return NextResponse.json<LeadApiResponse<null>>({
-        success: false,
-        error: 'A lead with this email or phone number already exists'
-      }, { status: 409 });
-    }
-
     // Create the lead
     const leadData = {
       who: body.who.toLowerCase(),
