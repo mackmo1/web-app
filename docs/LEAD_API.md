@@ -23,8 +23,8 @@ Currently, the API does not require authentication. In production, you should im
 interface Lead {
   id: string;                    // Unique identifier
   created_at: string;           // ISO timestamp
-  who: string;                  // Required: buyer, seller, investor, tenant, landlord
-  intent: string;               // Required: buy, sell, rent, lease, invest
+  who: string;                  // Required: buyer, seller, investor, tenant, landlord, website
+  intent: string;               // Required: buy, sell, rent, lease, invest, brochure_download
   property_type: string | null; // Optional: apartment, villa, plot, commercial, office, warehouse
   agent: string | null;         // Optional: assigned agent name
   status: string | null;        // Optional: new, contacted, qualified, converted, closed, lost
@@ -250,8 +250,8 @@ DELETE /api/leads/1
 
 ### Required Fields
 
-- `who`: Must be one of: buyer, seller, investor, tenant, landlord
-- `intent`: Must be one of: buy, sell, rent, lease, invest
+- `who`: Must be one of: buyer, seller, investor, tenant, landlord, website
+- `intent`: Must be one of: buy, sell, rent, lease, invest, brochure_download
 - `phone`: Must be 10-15 digits with optional country code
 - `email_id`: Must be valid email format
 - `location`: Cannot be empty, max 200 characters

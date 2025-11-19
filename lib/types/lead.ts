@@ -170,7 +170,7 @@ export interface LeadValidationRules {
 
 // Enums for validation
 export const LEAD_WHO_OPTIONS = ['buyer', 'seller', 'investor', 'tenant', 'landlord', 'website'] as const;
-export const LEAD_INTENT_OPTIONS = ['buy', 'sell', 'rent', 'lease', 'invest'] as const;
+export const LEAD_INTENT_OPTIONS = ['buy', 'sell', 'rent', 'lease', 'invest', 'brochure_download'] as const;
 export const LEAD_PROPERTY_TYPES = ['apartment', 'villa', 'plot', 'commercial', 'office', 'warehouse'] as const;
 export const LEAD_STATUS_OPTIONS = ['new', 'contacted', 'qualified', 'converted', 'closed', 'lost'] as const;
 export const LEAD_BEDROOM_OPTIONS = ['1BHK', '2BHK', '3BHK', '4BHK'] as const;

@@ -67,8 +67,23 @@ async function getProjectBySlugOrId(slug: string) {
   return prisma.projects.findFirst({ where: { name: { contains: nameLike, mode: 'insensitive' } } });
 }
 
-export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ProjectPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams?: { [key: string]: string | string[] | undefined } }) {
   const { slug } = await params;
+  const brochureLeadErrorRaw = searchParams?.brochureLeadError;
+  const brochureLeadMessageRaw = searchParams?.brochureLeadMessage;
+  const brochureLeadError = Array.isArray(brochureLeadErrorRaw) ? brochureLeadErrorRaw[0] : brochureLeadErrorRaw;
+  const brochureLeadMessage = Array.isArray(brochureLeadMessageRaw) ? brochureLeadMessageRaw[0] : brochureLeadMessageRaw;
+  const brochureErrorToShow =
+    brochureLeadMessage
+      || (brochureLeadError === 'missing_phone'
+        ? 'To download the brochure, please add a phone number to your profile.'
+        : brochureLeadError === 'validation_error'
+          ? 'We could not process your brochure request. Please try again.'
+          : brochureLeadError === 'lead_creation_failed'
+            ? 'We could not create your enquiry right now. Please try again later.'
+            : brochureLeadError === 'user_not_found'
+              ? 'We could not find your account. Please log in again.'
+              : undefined);
   const row = await getProjectBySlugOrId(slug);
   if (!row) {
     return notFound();
@@ -301,6 +316,9 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           <section className="rounded-xl border bg-white p-5 shadow-sm">
             <h2 className="text-lg font-semibold">Brochure</h2>
             <p className="mt-2 text-sm text-gray-600">Get the detailed project brochure with floor plans and specifications.</p>
+            {brochureErrorToShow && (
+              <p className="mt-2 text-sm text-red-600">{brochureErrorToShow}</p>
+            )}
             <div className="mt-4">
               {project.brochureUrl ? (
                 <a

@@ -74,6 +74,15 @@ export const testLeadData: CreateLeadRequest[] = [
     message: 'Office space available for lease in IT park',
     pin_no: '600001',
     address: 'OMR, Chennai'
+  },
+  {
+    who: 'website',
+    intent: 'brochure_download',
+    name: 'Website Brochure User',
+    phone: '+91-9876543215',
+    email_id: 'brochure.user@example.com',
+    location: 'Brochure City',
+    message: 'Brochure downloaded for test project'
   }
 ];
 
@@ -85,7 +94,8 @@ export const testQueryParams: LeadQueryParams[] = [
   { location: 'mumbai', budget_min: '50000' },
   { search: 'apartment', page: 1, limit: 5 },
   { created_from: '2024-01-01', created_to: '2024-12-31' },
-  { agent: 'john', status: 'contacted' }
+  { agent: 'john', status: 'contacted' },
+  { intent: 'brochure_download', page: 1, limit: 5 }
 ];
 
 // Test update data
@@ -262,11 +272,11 @@ export async function testValidationErrors() {
 }
 
 /**
- * Test duplicate detection
+ * Test duplicate behavior (duplicates are allowed by design)
  */
 export async function testDuplicateDetection() {
-  console.log('🧪 Testing Duplicate Detection...');
-  
+  console.log('🧪 Testing Duplicate Behavior (duplicates should be allowed)...');
+
   const duplicateData = {
     who: 'buyer',
     intent: 'buy',
@@ -275,7 +285,7 @@ export async function testDuplicateDetection() {
     email_id: 'duplicate@example.com',
     location: 'Test City'
   };
-  
+
   try {
     // Create first lead
     const response1 = await fetch('/api/leads', {
@@ -283,34 +293,34 @@ export async function testDuplicateDetection() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(duplicateData)
     });
-    
+
     const result1 = await response1.json();
-    
+
     if (result1.success) {
       console.log('✅ First lead created');
-      
+
       // Try to create duplicate
       const response2 = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(duplicateData)
       });
-      
+
       const result2 = await response2.json();
-      
-      if (!result2.success && result2.error.includes('already exists')) {
-        console.log('✅ Duplicate detection working');
+
+      if (result2.success) {
+        console.log('✅ Duplicate lead created as expected (duplicate prevention disabled)');
       } else {
-        console.log('❌ Duplicate detection failed');
+        console.log('❌ Duplicate lead creation failed unexpectedly:', result2.error);
       }
-      
-      // Clean up - delete the test lead
+
+      // Clean up - delete the first test lead
       await testDeleteLead(result1.data.id);
     } else {
       console.log('❌ Failed to create first lead:', result1.error);
     }
   } catch (error) {
-    console.log('❌ Duplicate test error:', error);
+    console.log('❌ Duplicate behavior test error:', error);
   }
 }
 

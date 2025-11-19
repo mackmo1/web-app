@@ -78,8 +78,8 @@ Successfully implemented complete CRUD (Create, Read, Update, Delete) API routes
 ## 🎯 Lead-Specific Features
 
 ### **Field Validation**
-- **Who**: buyer, seller, investor, tenant, landlord
-- **Intent**: buy, sell, rent, lease, invest
+- **Who**: buyer, seller, investor, tenant, landlord, website
+- **Intent**: buy, sell, rent, lease, invest, brochure_download
 - **Property Type**: apartment, villa, plot, commercial, office, warehouse
 - **Status**: new, contacted, qualified, converted, closed, lost
 - **Phone**: 10-15 digits with optional country code
