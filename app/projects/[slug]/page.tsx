@@ -67,10 +67,19 @@ async function getProjectBySlugOrId(slug: string) {
   return prisma.projects.findFirst({ where: { name: { contains: nameLike, mode: 'insensitive' } } });
 }
 
-export default async function ProjectPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams?: { [key: string]: string | string[] | undefined } }) {
+export default async function ProjectPage(
+  {
+    params,
+    searchParams,
+  }: {
+    params: Promise<{ slug: string }>;
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  },
+) {
   const { slug } = await params;
-  const brochureLeadErrorRaw = searchParams?.brochureLeadError;
-  const brochureLeadMessageRaw = searchParams?.brochureLeadMessage;
+  const resolvedSearchParams = (searchParams && (await searchParams)) ?? undefined;
+  const brochureLeadErrorRaw = resolvedSearchParams?.brochureLeadError;
+  const brochureLeadMessageRaw = resolvedSearchParams?.brochureLeadMessage;
   const brochureLeadError = Array.isArray(brochureLeadErrorRaw) ? brochureLeadErrorRaw[0] : brochureLeadErrorRaw;
   const brochureLeadMessage = Array.isArray(brochureLeadMessageRaw) ? brochureLeadMessageRaw[0] : brochureLeadMessageRaw;
   const brochureErrorToShow =
