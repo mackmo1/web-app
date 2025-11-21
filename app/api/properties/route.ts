@@ -5,6 +5,7 @@ import { getPublicImageUrl } from '@/lib/image-url'
 
 // Helper: format property to JSON friendly (BigInt -> string, Decimal -> string)
 import type { property as PropertyModel, Prisma } from '@/lib/generated/prisma';
+import { buildPropertyWhereClause } from '@/lib/utils/property';
 
 type PropertyEntity = PropertyModel;
 
@@ -54,6 +55,8 @@ function formatProperty(p: PropertyEntity): PropertyJson {
   };
 }
 
+const MAX_SEARCH_LENGTH = 200;
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -64,14 +67,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid pagination' }, { status: 400 });
     }
 
-    const where: Prisma.propertyWhereInput = {};
     const listing = searchParams.get('listing');
     const city = searchParams.get('city');
     const type = searchParams.get('type');
+    const search = searchParams.get('search');
 
-    if (listing) where.listing = listing;
-    if (city) where.city = { contains: city, mode: 'insensitive' };
-    if (type) where.type = type;
+    if (search && search.length > MAX_SEARCH_LENGTH) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Search query too long. Maximum 200 characters allowed.',
+        },
+        { status: 400 },
+      );
+    }
+
+    const where = buildPropertyWhereClause({
+      listing,
+      city,
+      type,
+      search,
+    });
 
     const [items, total] = await Promise.all([
       prisma.property.findMany({ where, skip: (page - 1) * limit, take: limit, orderBy: { created_at: 'desc' } }),

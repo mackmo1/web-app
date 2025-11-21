@@ -162,7 +162,7 @@ export function BuyPage({ query }: { query: string }) {
       const params = new URLSearchParams()
       params.set('listing', filters.type || 'buy')
       params.set('limit', '50')
-      if (filters.query) params.set('city', filters.query)
+      if (filters.query) params.set('search', filters.query)
 
       const res = await fetch(`/api/properties?${params.toString()}`, { cache: 'no-store' })
       const json = await res.json()
@@ -184,15 +184,6 @@ export function BuyPage({ query }: { query: string }) {
           const priceNum = Number(p.price ?? 0)
           return priceNum >= min && priceNum <= max
         })
-      }
-      if (filters.query) {
-        const q = filters.query.toLowerCase()
-        items = items.filter(
-          (p) =>
-            (p.city ?? '').toLowerCase().includes(q) ||
-            (p.address ?? '').toLowerCase().includes(q) ||
-            (p.project ?? '').toLowerCase().includes(q)
-        )
       }
 
       setSearchResults(items.map(mapToDetailItem))
