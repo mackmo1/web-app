@@ -307,10 +307,11 @@ export default async function ProjectPage(
             ) : (
               <p className="mt-2 text-sm text-gray-600">Map link will appear here.</p>
             )}
+            {/* Temporarily hide the external Google Maps link
             {project.googleMapsUrl && (
               <div className="mt-3">
                 <a
-                  href={(project.googleMapsUrl.includes('output=embed') ? project.googleMapsUrl.replace('output=embed','') : project.googleMapsUrl)}
+                  href={toExternalMapsUrl(project.googleMapsUrl) ?? undefined}
                   target="_blank"
                   rel="noreferrer"
                   className="text-sm text-blue-600 hover:underline"
@@ -319,6 +320,7 @@ export default async function ProjectPage(
                 </a>
               </div>
             )}
+            */}
           </section>
 
           {/* Brochure */}
