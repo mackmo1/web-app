@@ -31,7 +31,7 @@ export default async function ProjectsListingPage() {
         {rows.map((p) => {
           const nearby = csvToArray(p.near_by).slice(0, 3);
           const slug = p.external_id || p.id.toString();
-          const heroUrl = (p.external_id ? heroMap[p.external_id] : null) || '/contact-banner.jpg';
+          const heroUrl = (p.external_id ? heroMap[p.external_id] : null) || '/Prestige_Sarjapur_2.png';
           return (
             <article key={p.id.toString()} className="group overflow-hidden rounded-xl border bg-white shadow-sm transition hover:shadow-md">
               {/* Cover */}
@@ -40,7 +40,7 @@ export default async function ProjectsListingPage() {
                 <img
                   src={heroUrl}
                   alt={p.name || 'Project image'}
-                  className="absolute inset-0 h-full w-full object-cover"
+                  className="absolute inset-0 h-full w-full object-contain"
                 />
                 {p.overview_area && (
                   <div className="absolute left-3 top-3 rounded bg-black/55 px-2 py-0.5 text-xs text-white">
