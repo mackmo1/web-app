@@ -39,6 +39,7 @@ model property {
   message        String?
   external_id    String?         @db.VarChar
   coverImagePath String?         @db.VarChar
+  bathrooms      Int?            @db.SmallInt
   PropertyMedia  PropertyMedia[]
 }
 

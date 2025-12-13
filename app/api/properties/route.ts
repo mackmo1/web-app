@@ -18,6 +18,7 @@ type PropertyJson = {
   address: string;
   pin_code: string | null;
   rooms: string;
+  bathrooms: number | null;
   parking: boolean | null;
   price: string;
   facing: string | null;
@@ -41,6 +42,7 @@ function formatProperty(p: PropertyEntity): PropertyJson {
     address: p.address,
     pin_code: p.pin_code ?? null,
     rooms: p.rooms,
+    bathrooms: p.bathrooms ?? null,
     parking: p.parking ?? null,
     price: String(p.price),
     facing: p.facing ?? null,
@@ -123,6 +125,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Coercions for numeric/boolean/date fields
+    const bathrooms =
+      body.bathrooms !== undefined && body.bathrooms !== null
+        ? Number(body.bathrooms)
+        : null;
+
     const data: Prisma.propertyCreateInput = {
       listing: body.listing,
       type: body.type ?? null,
@@ -131,6 +138,7 @@ export async function POST(request: NextRequest) {
       address: body.address,
       pin_code: body.pin_code ?? null,
       rooms: body.rooms,
+      bathrooms,
       parking: typeof body.parking === 'boolean' ? body.parking : null,
       price: body.price, // Prisma will coerce string->Decimal
       facing: body.facing ?? null,

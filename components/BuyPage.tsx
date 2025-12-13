@@ -68,6 +68,7 @@ export function BuyPage({ query }: { query: string }) {
     project?: string
     address?: string
     rooms?: number | string | null
+    bathrooms?: number | string | null
     price?: number | string | null
     area?: number | string | null
     message?: string | null
@@ -77,46 +78,56 @@ export function BuyPage({ query }: { query: string }) {
 
   // Helper to map API property -> CardItem
   const mapToCardItem = useCallback(
-    (p: ApiProperty): CardItem => ({
-      id: String(p.id),
-      image: p.coverImageUrl || '/hero_image_1.jpg',
-      title: p.project ?? '-',
-      price: String(p.price ?? ''),
-      location: [p.address, p.city].filter(Boolean).join(', '),
-      beds: Number(p.rooms ?? 0),
-      baths: 0, // UI expects this field; no column yet
-      area: p.area != null ? String(p.area) : '',
-      type: (p.listing as 'buy' | 'rent') ?? 'buy',
-      propertyType: p.type ?? '',
-    }),
+    (p: ApiProperty): CardItem => {
+      const bedsNum = Number(p.rooms)
+      const bathsNum = Number(p.bathrooms)
+
+      return {
+        id: String(p.id),
+        image: p.coverImageUrl || '/hero_image_1.jpg',
+        title: p.project ?? '-',
+        price: String(p.price ?? ''),
+        location: [p.address, p.city].filter(Boolean).join(', '),
+        beds: Number.isFinite(bedsNum) ? bedsNum : 0,
+        baths: Number.isFinite(bathsNum) ? bathsNum : 0,
+        area: p.area != null ? String(p.area) : '',
+        type: (p.listing as 'buy' | 'rent') ?? 'buy',
+        propertyType: p.type ?? '',
+      }
+    },
     []
   )
 
   // Helper to map API property -> DetailItem
-  const mapToDetailItem = (p: ApiProperty): DetailItem => ({
-    id: String(p.id),
-    images: [p.coverImageUrl || '/hero_image_1.jpg'],
-    title: p.project ?? '-',
-    price: String(p.price ?? ''),
-    location: [p.address, p.city].filter(Boolean).join(', '),
-    beds: Number(p.rooms ?? 0),
-    baths: 0, // UI expects this field; no column yet
-    area: p.area != null ? String(p.area) : '',
-    type: (p.listing as 'buy' | 'rent') ?? 'buy',
-    propertyType: p.type ?? '',
-    description: p.message ?? '',
-    amenities: [],
-    postedDate: (() => {
-      const created = p.created_at ? new Date(p.created_at) : null
-      if (!created) return ''
-      const days = Math.floor((Date.now() - created.getTime()) / (1000 * 60 * 60 * 24))
-      if (days <= 0) return 'today'
-      if (days === 1) return '1 day ago'
-      return `${days} days ago`
-    })(),
-    agentName: '—',
-    isVerified: false,
-  })
+  const mapToDetailItem = (p: ApiProperty): DetailItem => {
+    const bedsNum = Number(p.rooms)
+    const bathsNum = Number(p.bathrooms)
+
+    return {
+      id: String(p.id),
+      images: [p.coverImageUrl || '/hero_image_1.jpg'],
+      title: p.project ?? '-',
+      price: String(p.price ?? ''),
+      location: [p.address, p.city].filter(Boolean).join(', '),
+      beds: Number.isFinite(bedsNum) ? bedsNum : 0,
+      baths: Number.isFinite(bathsNum) ? bathsNum : 0,
+      area: p.area != null ? String(p.area) : '',
+      type: (p.listing as 'buy' | 'rent') ?? 'buy',
+      propertyType: p.type ?? '',
+      description: p.message ?? '',
+      amenities: [],
+      postedDate: (() => {
+        const created = p.created_at ? new Date(p.created_at) : null
+        if (!created) return ''
+        const days = Math.floor((Date.now() - created.getTime()) / (1000 * 60 * 60 * 24))
+        if (days <= 0) return 'today'
+        if (days === 1) return '1 day ago'
+        return `${days} days ago`
+      })(),
+      agentName: '—',
+      isVerified: false,
+    }
+  }
 
   // Initial load for "Buy" grid
   useEffect(() => {

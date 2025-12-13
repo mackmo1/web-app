@@ -32,6 +32,7 @@ type PropertyJson = {
   address: string
   pin_code: string | null
   rooms: string
+  bathrooms: number | null
   parking: boolean | null
   price: string
   facing: string | null
@@ -55,6 +56,7 @@ function formatProperty(p: PropertyEntity): PropertyJson {
     address: p.address,
     pin_code: p.pin_code ?? null,
     rooms: p.rooms,
+    bathrooms: p.bathrooms ?? null,
     parking: p.parking ?? null,
     price: String(p.price),
     facing: p.facing ?? null,
@@ -139,6 +141,8 @@ export async function POST(req: Request) {
     const externalId = getField('external_id')
     const parkingStr = getField('parking') // 'yes' | 'no'
 
+    const bathroomsStr = getField('bathrooms')
+
     let startingDate: Date | null = null
     if (startingDtStr) {
       const dt = new Date(startingDtStr)
@@ -169,6 +173,14 @@ export async function POST(req: Request) {
     if (parkingStr === 'yes') parking = true
     else if (parkingStr === 'no') parking = false
 
+    let bathrooms: number | null = null
+    if (bathroomsStr != null) {
+      const n = Number(bathroomsStr)
+      if (!Number.isNaN(n)) {
+        bathrooms = n
+      }
+    }
+
     const data: Prisma.propertyCreateInput = {
       listing: listing!,
       type: type ?? null,
@@ -177,6 +189,7 @@ export async function POST(req: Request) {
       address: address!,
       pin_code: pin_code ?? null,
       rooms: rooms!,
+      bathrooms,
       parking,
       price: price!,
       facing: facing ?? null,

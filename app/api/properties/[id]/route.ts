@@ -64,6 +64,10 @@ export async function PUT(
       address: body.address ?? undefined,
       pin_code: body.pin_code ?? undefined,
       rooms: body.rooms ?? undefined,
+      bathrooms:
+        body.bathrooms !== undefined && body.bathrooms !== null
+          ? Number(body.bathrooms)
+          : undefined,
       parking: typeof body.parking === 'boolean' ? body.parking : undefined,
       price: body.price ?? undefined,
       facing: body.facing ?? undefined,

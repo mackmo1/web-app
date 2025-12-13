@@ -16,7 +16,7 @@ export function PropertyListings() {
     price: string
     location: string
     beds: number
-    baths: number
+	    baths: number
     area: string
     type: 'rent' | 'buy'
     propertyType: string
@@ -28,9 +28,10 @@ export function PropertyListings() {
     city?: string
     project?: string
     address?: string
-    rooms?: number | string | null
-    price?: number | string | null
-    area?: number | string | null
+	    rooms?: number | string | null
+	    bathrooms?: number | string | null
+	    price?: number | string | null
+	    area?: number | string | null
     coverImageUrl?: string | null
   }
 
@@ -38,21 +39,26 @@ export function PropertyListings() {
   const [buyProperties, setBuyProperties] = useState<CardItem[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  const mapToCardItem = useCallback(
-    (p: ApiProperty): CardItem => ({
-      id: String(p.id),
-      image: p.coverImageUrl || '/hero_image_1.jpg',
-      title: p.project ?? '-',
-      price: String(p.price ?? ''),
-      location: [p.address, p.city].filter(Boolean).join(', '),
-      beds: Number(p.rooms ?? 0),
-      baths: 0,
-      area: p.area != null ? String(p.area) : '',
-      type: (p.listing as 'buy' | 'rent') ?? 'buy',
-      propertyType: p.type ?? '',
-    }),
-    []
-  )
+	  const mapToCardItem = useCallback(
+	    (p: ApiProperty): CardItem => {
+	      const bedsNum = Number(p.rooms)
+	      const bathsNum = Number(p.bathrooms)
+
+	      return {
+	        id: String(p.id),
+	        image: p.coverImageUrl || '/hero_image_1.jpg',
+	        title: p.project ?? '-',
+	        price: String(p.price ?? ''),
+	        location: [p.address, p.city].filter(Boolean).join(', '),
+	        beds: Number.isFinite(bedsNum) ? bedsNum : 0,
+	        baths: Number.isFinite(bathsNum) ? bathsNum : 0,
+	        area: p.area != null ? String(p.area) : '',
+	        type: (p.listing as 'buy' | 'rent') ?? 'buy',
+	        propertyType: p.type ?? '',
+	      }
+	    },
+	    []
+	  )
 
   useEffect(() => {
     let cancelled = false
